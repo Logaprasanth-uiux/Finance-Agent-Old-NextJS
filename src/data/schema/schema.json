@@ -1,0 +1,1931 @@
+[
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "WF",
+        "ThemeName": "BillWFV1",
+        "Section": "header-1",
+        "Type": "Form",
+        "Description": "Bill Work Flow Info",
+        "SourceFields": [
+            {
+                "FieldName": "Organization Name",
+                "FieldType": "select",
+                "FieldEditable": "true",
+                "dynamic_option": {
+                    "api_Directory": "api/vr2apicall/commonAPI",
+                    "query_Name": "ListofOrganizationName_IP",
+                    "what_to_store": "ListofOrganizationName_IP",
+                    "dynamic_query": [
+                        {
+                            "emailid": "emailid",
+                            "replaceStringWith": "emailid"
+                        }
+                    ]
+                },
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "onChange_operation": {
+                    "get_From": "ListofOrganizationName_IP"
+                },
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Organization ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "range_fn": "ORG_ID_CONST",
+                "child_dependency": [
+                    "Item Ref",
+                    "CostAllocationMethod",
+                    "Ledger Category",
+                    "GST Number",
+                    "Order ID"
+                ],
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Upload (PDF)",
+                "FieldType": "input",
+                "FieldSubType": "upload_show",
+                "FieldDefFn": "extract_pdf",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Interim ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "MASTEROBJECTSEQUENCING.BE",
+                "FieldEditable": "false",
+                "LockObject": "true",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Bill Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "MASTEROBJECTSEQUENCING.BN",
+                "FieldEditable": "false",
+                "LockObject": "true",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Status",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "activation_status",
+                "FieldEditable": "false",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "Upload Mode",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "Created Date&Time",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "current_datetime",
+                "Render": "false",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Created By",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "Message ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "Object ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "Modified By",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 12
+            },
+            {
+                "FieldName": "StrategyName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 13
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "BT3H",
+        "ThemeName": "BillExtV1",
+        "Section": "1-body-1",
+        "Type": "Form",
+        "Description": "Vendor Account Info",
+        "SourceFields": [
+            {
+                "FieldName": "Vendor ID",
+                "FieldType": "input_search",
+                "SearchHelp": "Name/Code",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "child_dependency": [
+                    "Ledger Category",
+                    "Order ID"
+                ],
+                "tooltip": "Click on the 'Search Vendor Name' link, and it provide Vendor ID",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Vendor Name",
+                "FieldType": "input_search",
+                "api_info": {
+                    "api_Directory": "api/vr2apicall/billExtract_vendor_name_search"
+                },
+                "FieldSubType": "text",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Vendor Name As Per Master",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Vendor CIN",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Vendor PAN",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[A-Z]{5}[0-9]{4}[A-Z]{1}$",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "Vendor TAN",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[A-Z]{4}[0-9]{5}[A-Z]{1}$",
+                "Render": "false",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "Vendor GST Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Vendor State Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "Currency",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "Invoice Authorised",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "Tax Category",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 12
+            },
+            {
+                "FieldName": "GSTReference",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 13
+            },
+            {
+                "FieldName": "TDSReference",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 14
+            },
+            {
+                "FieldName": "Organization ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 15
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "BT3H",
+        "ThemeName": "BillExtV1",
+        "Section": "1-body-2",
+        "Type": "Form",
+        "Description": "Billing Info",
+        "SourceFields": [
+            {
+                "FieldName": "Invoice Ref",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "UniqueCheck": "VendorMaster",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Original Invoice Ref",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "conditional_mandatory": {
+                    "serviceID": "billinginfo#documenttype",
+                    "val": [
+                        "SubseqDr",
+                        "SubseqCr"
+                    ]
+                },
+                "FieldID": 2
+            },
+            {
+                "FieldName": "DocumentType",
+                "FieldType": "select",
+                "Options": [
+                    "Bill",
+                    "SubseqDr",
+                    "SubseqCr"
+                ],
+                "tooltip": "Bill : Use 'Bill' for new payable amounts to vendors due to received goods or services, SubseqCr : Select 'SubseqCr' for any increase in payable amounts, like added costs or bill corrections, SubseqDr : Choose 'SubseqDr' to decrease payable amounts due to returns, discounts, or overpayments.",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Invoice Date",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "DateCheck": "isNotFutureDate",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Accounting Date",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Due Date",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 6
+            },
+            {
+                "FieldName": "BillTo",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "CIN Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "PAN",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[A-Z]{5}[0-9]{4}[A-Z]{1}$",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "TAN",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[A-Z]{4}[0-9]{5}[A-Z]{1}$",
+                "Render": "false",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "GST Number",
+                "FieldType": "select",
+                "FormatCheck": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+                "dynamic_option": {
+                    "api_Directory": "api/vr2apicall/commonAPI",
+                    "query_Name": "OrgGSTNumber",
+                    "what_to_store": "OrgGSTNumber",
+                    "dynamic_query": [
+                        {
+                            "getValueFrom": "Organization ID",
+                            "replaceStringWith": "Organization ID"
+                        }
+                    ]
+                },
+                "onChange_operation": {
+                    "get_From": "OrgGSTNumber"
+                },
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldSubType": "text",
+                "FieldID": 12
+            },
+            {
+                "FieldName": "Billing State Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 13
+            },
+            {
+                "FieldName": "LocalCurrency",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 14
+            },
+            {
+                "FieldName": "Total Invoice Base Value",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 15
+            },
+            {
+                "FieldName": "Total Invoice Tax Value",
+                "ValueCheck": "<_Total Invoice Base Value",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 16
+            },
+            {
+                "FieldName": "Total Invoice Gross Value",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 17
+            },
+            {
+                "FieldName": "Addl Charge Type",
+                "FieldType": "select",
+                "Options": [
+                    "TollCharge",
+                    "FreightCharge",
+                    "HandlingCharge",
+                    "PackagingCharge",
+                    "CustomsDuty",
+                    "ServiceCharge",
+                    "InstallationCharge",
+                    "OthersCharge",
+                    "EnvironmentalFee",
+                    "ConsultingFee",
+                    "AdministrativeFee"
+                ],
+                "FieldID": 18
+            },
+            {
+                "FieldName": "Total Addl Charge",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 19
+            },
+            {
+                "FieldName": "RoundOff Value",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 20
+            },
+            {
+                "FieldName": "Narration",
+                "FieldType": "textarea",
+                "FieldSubType": "text",
+                "FieldID": 21
+            },
+            {
+                "FieldName": "ExchangeRate",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "tooltip": "Perform Currency conversion using the rate.",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 22
+            },
+            {
+                "FieldName": "ShipTo",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 23
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "BT3I",
+        "ThemeName": "BillExtIV1",
+        "Section": "1-body-3",
+        "Type": "Table",
+        "AddRow": "true",
+        "Description": "Billing Summary",
+        "SourceFields": [
+            {
+                "FieldName": "Line ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 1,
+                "FieldEditable": "false"
+            },
+            {
+                "FieldName": "Order ID",
+                "FieldType": "popup_select",
+                "api_info": {
+                    "api_Directory": "api/vr2apicall/billExtract_POIPNumber_popup"
+                },
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Rev-Reference",
+                "FieldType": "select",
+                "Options": [
+                    "FullReversal",
+                    "ProportionateReversal"
+                ],
+                "conditional_mandatory": {
+                    "serviceID": "billingsummary#poiptype",
+                    "val": [
+                        "GoodsReceipt",
+                        "ServiceReceipt"
+                    ]
+                },
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Account Type",
+                "FieldType": "select",
+                "Options": [
+                    "ExpAc",
+                    "PrePaidAc",
+                    "ProvAc",
+                    "GRIRAc"
+                ],
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 5
+            },
+            {
+                "FieldName": "SplH",
+                "FieldType": "select",
+                "Options": [
+                    "DefAmrt"
+                ],
+                "FieldID": 6
+            },
+            {
+                "FieldName": "ForPrdFrom",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 7
+            },
+            {
+                "FieldName": "ForPrdTo",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "DateCheck": "isAfter_ForPrdFrom",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Item Ref",
+                "FieldType": "search&select",
+                "api_info": {
+                    "api_Directory": "api/vr2apicall/getAllItemRef",
+                    "dynamic_query": [
+                        {
+                            "getValueFrom": "Organization ID",
+                            "replaceStringWith": "Organization ID"
+                        }
+                    ],
+                    "what_to_store": "PO_IP_Item_Ref"
+                },
+                "onChange_operation": {
+                    "get_From": "PO_IP_Item_Ref"
+                },
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "css": {
+                    "width": "20rem"
+                },
+                "FieldID": 9
+            },
+            {
+                "FieldName": "Item ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "Item Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "Resource Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 12
+            },
+            {
+                "FieldName": "Qty",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "ValueCheck": ">0",
+                "FieldID": 13
+            },
+            {
+                "FieldName": "Rate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "ValueCheck": ">0",
+                "FieldID": 14
+            },
+            {
+                "FieldName": "Base Value",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 15
+            },
+            {
+                "FieldName": "Discount Amt",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 16
+            },
+            {
+                "FieldName": "Nature Of NonTaxable",
+                "FieldType": "select",
+                "Options": [
+                    "Toll"
+                ],
+                "FieldID": 16
+            },
+            {
+                "FieldName": "Addl Charge",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 17
+            },
+            {
+                "FieldName": "Addl Charge1",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 18
+            },
+            {
+                "FieldName": "Tax Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 19
+            },
+            {
+                "FieldName": "CGST Percentage",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "ValueCheck": ">=0 && <=100",
+                "FieldID": 20
+            },
+            {
+                "FieldName": "CGST",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 21
+            },
+            {
+                "FieldName": "SGST Percentage",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "ValueCheck": ">=0 && <=100",
+                "FieldID": 22
+            },
+            {
+                "FieldName": "SGST",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 23
+            },
+            {
+                "FieldName": "IGST Percentage",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "ValueCheck": ">=0 && <=100",
+                "FieldID": 24
+            },
+            {
+                "FieldName": "IGST",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 25
+            },
+            {
+                "FieldName": "Cess Percentage",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 26
+            },
+            {
+                "FieldName": "Cess",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 27
+            },
+            {
+                "FieldName": "Tax Percentage",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 28
+            },
+            {
+                "FieldName": "Tax Value",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 29
+            },
+            {
+                "FieldName": "Total Value",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 30
+            },
+            {
+                "FieldName": "CostAllocationMethod",
+                "FieldType": "select",
+                "dynamic_option": {
+                    "api_Directory": "api/vr2apicall/commonAPI",
+                    "query_Name": "CostAllcationMethod",
+                    "what_to_store": "CostAllcationMethod",
+                    "dynamic_query": [
+                        {
+                            "getValueFrom": "Organization ID",
+                            "replaceStringWith": "Organization ID"
+                        }
+                    ]
+                },
+                "onChange_operation": {
+                    "get_From": "CostAllcationMethod"
+                },
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 31
+            },
+            {
+                "FieldName": "Department",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "conditional_mandatory": {
+                    "serviceID": "billworkflowinfo#status",
+                    "val": [
+                        "Not Released"
+                    ]
+                },
+                "FieldID": 32
+            },
+            {
+                "FieldName": "section Name",
+                "FieldType": "select",
+                "dynamic_option": {
+                    "api_Directory": "api/vr2apicall/commonAPI",
+                    "query_Name": "SectionName",
+                    "what_to_store": "SectionName"
+                },
+                "onChange_operation": {
+                    "get_From": "SectionName"
+                },
+                "FieldID": 33
+            },
+            {
+                "FieldName": "Percentage of TDS",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 34
+            },
+            {
+                "FieldName": "Ledger Category",
+                "FieldType": "select",
+                "dynamic_option": {
+                    "api_Directory": "api/vr2apicall/commonAPI",
+                    "query_Name": "LedgerCategory",
+                    "what_to_store": "LedgerCategory",
+                    "dynamic_query": [
+                        {
+                            "getValueFrom": "Organization ID",
+                            "replaceStringWith": "Organization ID"
+                        },
+                        {
+                            "getValueFrom": "Vendor ID",
+                            "replaceStringWith": "Vendor ID"
+                        }
+                    ]
+                },
+                "onChange_operation": {
+                    "get_From": "LedgerCategory"
+                },
+                "FieldSubType": "text",
+                "FieldID": 35
+            },
+            {
+                "FieldName": "Order Type",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 36
+            },
+            {
+                "FieldName": "Amt in Lcl Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 37
+            },
+            {
+                "FieldName": "Amt in Txn Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 38
+            },
+            {
+                "FieldName": "Organization ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 39
+            },
+            {
+                "FieldName": "HSN/SAC",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 40
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "MB",
+        "ThemeName": "BillBV1",
+        "Section": "1-body-4",
+        "Type": "Form",
+        "Description": "Payment Details",
+        "SourceFields": [
+            {
+                "FieldName": "Bank Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Branch Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "IFSC Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[A-Z]{4}0[A-Z0-9]{6}$",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Account Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[0-9]{9,18}$",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Account Holder Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "MICR Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "SWIFT Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FormatCheck": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "BIC",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Beneficiary",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "IBAN GBP",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 10
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "PVB",
+        "ThemeName": "PVBV1",
+        "Section": "1-body-5",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Two Way Matching(Bill Vs PO/IP)",
+        "SourceFields": [
+            {
+                "FieldName": "ItemID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "PO/IP Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Fields",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Balance in PO/IP",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Ref Point",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Bill",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "Difference",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldID": 7
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "CA",
+        "ThemeName": "RCAV1",
+        "Section": "1-body-6",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Provision Reversal Cost Allocation",
+        "SourceFields": [
+            {
+                "FieldName": "Rev-CostAllocationMethod",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Rev-LOB",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Rev-CostAllocationParameterValue",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Rev-CostAllocated Lcl Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "PO/IP Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "FromDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "ToDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "DateCheck": "isAfter_FromDate",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "CostAllocated Txn Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "LineRef",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "AccountType",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "LedgerName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 11
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "CA",
+        "ThemeName": "BCAV1",
+        "Section": "1-body-7",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Bill Cost Allocation",
+        "SourceFields": [
+            {
+                "FieldName": "CostAllocationMethod",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "LOB",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "CostAllocationParameterValue",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "CostAllocated Lcl Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "PO/IP Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "FromDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "ToDate",
+                "FieldType": "input",
+                "DateCheck": "isAfter_FromDate",
+                "FieldSubType": "text",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "CostAllocated Txn Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "LineRef",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "AccountType",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "LedgerName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 11
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "ABI",
+        "ThemeName": "ABIV1",
+        "Section": "1-body-8",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Expenses Amortization Schedule",
+        "SourceFields": [
+            {
+                "FieldName": "Line ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "FromDate",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "ToDate",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "DateCheck": "isAfter_FromDate",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "PO/IP Item Ref",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Item ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Item Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "UnitPeriod",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "BasevalueUnitval",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Base Value",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "ExpAmortizeDate",
+                "FieldType": "input",
+                "FieldSubType": "date",
+                "DatePicker": "true",
+                "FieldID": 10
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "AD",
+        "ThemeName": "RADV1",
+        "Section": "1-body-9",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Provision Reversal Journal",
+        "SourceFields": [
+            {
+                "FieldName": "Rev-AccDoc Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "MASTEROBJECTSEQUENCING.AJ",
+                "FieldEditable": "false",
+                "LockObject": "true",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Rev-AccountingDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Rev-AccountType",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Rev-ItemType",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Rev-AccountGroup",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Rev-AccountClass",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "Rev-MISGrouping",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "Rev-LedgerName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Rev-SubLedgerName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "Rev-COA",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "Rev-AccountCode",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "Rev-Amt in Lcl Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 12
+            },
+            {
+                "FieldName": "Rev-Amt in Txn Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 13
+            },
+            {
+                "FieldName": "FromDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 14
+            },
+            {
+                "FieldName": "ToDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "DateCheck": "isAfter_FromDate",
+                "FieldID": 15
+            },
+            {
+                "FieldName": "PO/IP Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 16
+            },
+            {
+                "FieldName": "Item ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 17
+            },
+            {
+                "FieldName": "Value",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 18
+            },
+            {
+                "FieldName": "LineRef",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 19
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "AD",
+        "ThemeName": "BADV1",
+        "Section": "1-body-10",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Expenses Journal",
+        "SourceFields": [
+            {
+                "FieldName": "AccDoc Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "MASTEROBJECTSEQUENCING.AJ",
+                "FieldEditable": "false",
+                "LockObject": "true",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "AccountingDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "AccountType",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "ItemType",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "AccountGroup",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "AccountClass",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "MISGrouping",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "LedgerName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "SubLedgerName",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "COA",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "AccountCode",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "Amt in Lcl Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 12
+            },
+            {
+                "FieldName": "Amt in Txn Curr",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 13
+            },
+            {
+                "FieldName": "FromDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 14
+            },
+            {
+                "FieldName": "ToDate",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "DateCheck": "isAfter_FromDate",
+                "FieldID": 15
+            },
+            {
+                "FieldName": "PO/IP Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 16
+            },
+            {
+                "FieldName": "Item ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 17
+            },
+            {
+                "FieldName": "LOB",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 18
+            },
+            {
+                "FieldName": "CostAllocationMethod",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 19
+            },
+            {
+                "FieldName": "Value",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 20
+            },
+            {
+                "FieldName": "LineRef",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 21
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "CED",
+        "ThemeName": "BCEDV1",
+        "Section": "1-body-11",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Bill Cost Error Detection",
+        "SourceFields": [
+            {
+                "FieldName": "PO/IP Number",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "TotalBillBaseValue",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "TotalOrderBaseValue",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "TotalCostAllocationValue",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "CostAllocationVariance",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "AJCrossFootErrorInd",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "TotalReversedCostAllocationValue",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "ReversedAJCrossFootErrorInd",
+                "FieldType": "input",
+                "FieldSubType": "number",
+                "FieldEditable": "false",
+                "FieldID": 8
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "ProcessCode": "WF",
+        "ThemeName": "BillWFV1",
+        "Section": "footer-1",
+        "Type": "Table",
+        "AddRow": "false",
+        "Description": "Bill Work Flow",
+        "SourceFields": [
+            {
+                "FieldName": "LOB",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 1
+            },
+            {
+                "FieldName": "Activity Code",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 2
+            },
+            {
+                "FieldName": "Activity Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 3
+            },
+            {
+                "FieldName": "Activity Status",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "activation_status",
+                "FieldID": 4
+            },
+            {
+                "FieldName": "Dependency",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 5
+            },
+            {
+                "FieldName": "Department",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 6
+            },
+            {
+                "FieldName": "Reason",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "RequiredIf": "Rejected",
+                "FieldID": 7
+            },
+            {
+                "FieldName": "Due Date",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "FieldID": 8
+            },
+            {
+                "FieldName": "Action Date&Time",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 9
+            },
+            {
+                "FieldName": "Approver Name",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 10
+            },
+            {
+                "FieldName": "SNO",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 11
+            },
+            {
+                "FieldName": "Activity Type",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "Render": "false",
+                "FieldID": 12
+            },
+            {
+                "FieldName": "Work Flow ID",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldDefFn": "MASTEROBJECTSEQUENCING.WF",
+                "FieldEditable": "false",
+                "LockObject": "true",
+                "Render": "false",
+                "FieldID": 13
+            },
+            {
+                "FieldName": "Work Flow Status",
+                "FieldType": "input",
+                "FieldSubType": "text",
+                "FieldEditable": "false",
+                "Render": "false",
+                "FieldID": 14
+            }
+        ]
+    },
+    {
+        "ScreenName": "Bill Extraction",
+        "moduleName": "DTFOWS",
+        "Type": "SchemaComputation",
+        "SchemaKey": "MySchemaDef/SC00002.json",
+        "SourceDataMap": {
+            "PWBill": {
+                "By": "SQL_IN",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/ListofActiveAndAwaitBill.txt",
+                "Section": "Billing Summary",
+                "params": {
+                    "poipnumber": "Order ID",
+                    "organizationid": "Organization ID",
+                    "billnumber": "Bill Number"
+                }
+            },
+            "PO/IP": {
+                "By": "SQL_IN",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/ListofPOandIP.txt",
+                "Section": "Billing Summary",
+                "params": {
+                    "poipnumber": "Order ID",
+                    "organizationid": "Organization ID",
+                    "billnumber": "Bill Number"
+                }
+            },
+            "ReverseCAM": {
+                "By": "SQL_IN",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/ReverseGRN_CAM.txt",
+                "Section": "Billing Summary",
+                "params": {
+                    "poipnumber": "Order ID",
+                    "organizationid": "Organization ID"
+                }
+            },
+            "Bill_I": {
+                "By": "ScreenInput",
+                "Section": "Billing Summary"
+            },
+            "Bill_H": {
+                "By": "ScreenInput",
+                "Section": "Vendor Account Info"
+            },
+            "CA": {
+                "By": "SQL_IN",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/CostAllocationMaster_Actual.txt",
+                "Section": "Billing Summary",
+                "params": {
+                    "costallocationmethod": "CostAllocationMethod",
+                    "organizationid": "Organization ID"
+                }
+            },
+            "AP": {
+                "By": "SQL",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/AP2 _Bill.txt",
+                "Section": "Bill Work Flow Info",
+                "params": {
+                    "organizationid": "Organization ID",
+                    "strategyname": "StrategyName"
+                }
+            },
+            "AD": {
+                "By": "SQL",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/AD_ExpV2.txt",
+                "params": {
+                    "organizationid": "Organization ID",
+                    "statecode": "Billing State Code"
+                }
+            },
+            "IM": {
+                "By": "SQL_IN",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/IM_Bill.txt",
+                "Section": "Billing Summary",
+                "params": {
+                    "itemid": "Item ID",
+                    "organizationid": "Organization ID"
+                }
+            },
+            "VM": {
+                "By": "SQL",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/VM_Bill.txt",
+                "Section": "Vendor Account Info",
+                "params": {
+                    "vendorid": "Vendor ID",
+                    "organizationid": "Organization ID"
+                }
+            },
+            "VBill": {
+                "By": "SQL",
+                "QueryKey": "Q-REPOSITORY/DTFOWS/VTDSAmt.txt",
+                "Section": "Vendor Account Info",
+                "params": {
+                    "vendorid": "Vendor ID",
+                    "organizationid": "Organization ID",
+                    "billnumber": "Bill Number"
+                }
+            },
+            "PO&IPVsBillRep": {
+                "By": "CSV",
+                "Key": "ReportInput/PVB/Report.csv"
+            }
+        },
+        "amortize_schema": {
+            "SchemaName": "AmortizeBill_I",
+            "Columns": [
+                "Basevalue"
+            ],
+            "Method": "daywise",
+            "TrackUnitValOnCols": [
+                "Basevalue"
+            ]
+        },
+        "MapOutput": [
+            {
+                "SchemaClassName": "Bill_Item",
+                "Section": "Billing Summary"
+            },
+            {
+                "SchemaClassName": "PO&IPVsBill",
+                "Section": "Two Way Matching(Bill Vs PO/IP)"
+            },
+            {
+                "SchemaClassName": "ProvisionReversalCostAllocation",
+                "Section": "Provision Reversal Cost Allocation"
+            },
+            {
+                "SchemaClassName": "BillCostAllocation",
+                "Section": "Bill Cost Allocation"
+            },
+            {
+                "SchemaClassName": "BillWF",
+                "Section": "Bill Work Flow"
+            },
+            {
+                "SchemaClassName": "ProvisionReversalAccountingJournal",
+                "Section": "Provision Reversal Journal"
+            },
+            {
+                "SchemaClassName": "AccountingJournal",
+                "Section": "Expenses Journal"
+            },
+            {
+                "SchemaClassName": "AmortizeBill_I",
+                "Section": "Expenses Amortization Schedule"
+            },
+            {
+                "SchemaClassName": "ErrorDetection",
+                "Section": "Bill Cost Error Detection"
+            },
+            {
+                "SchemaClassName": "BillHead",
+                "Section": "Vendor Account Info"
+            },
+            {
+                "SchemaClassName": "BillHead",
+                "Section": "Bill Work Flow Info"
+            }
+        ]
+    }
+]
