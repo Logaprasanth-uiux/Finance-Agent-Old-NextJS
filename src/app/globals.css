@@ -3980,6 +3980,366 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* --------------------------------------------------------------------------
+   AR Open Items (Bank / On Account / Invoice / 26AS / TDS Contexts)
+   -------------------------------------------------------------------------- */
+.ar-open-items-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  min-height: calc(100vh - 120px);
+}
+
+.ar-open-items-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ar-open-items-header__title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.ar-open-items-header__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(90, 102, 255, 0.1);
+  color: var(--primary-blue);
+  flex-shrink: 0;
+}
+
+.ar-open-items-header__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-text);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.ar-open-items-header__subtitle {
+  font-size: 0.8rem;
+  color: var(--secondary-text);
+  margin: 0.2rem 0 0 0;
+  max-width: 560px;
+}
+
+.ar-open-items-header__counter {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-blue);
+  background: rgba(90, 102, 255, 0.08);
+  border: 1px solid rgba(90, 102, 255, 0.25);
+  padding: 0.3rem 0.7rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.ar-open-items-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.ar-open-items-filter-pill {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+/* Secondary filters (Transaction Date + Company) — deliberately a separate bar
+   from the source tabs above, since each tab's filter options differ */
+.ar-open-items-secondary-filters {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.65rem 0.9rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.ar-open-items-secondary-filters__group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.ar-open-items-secondary-filters__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--secondary-text);
+  white-space: nowrap;
+}
+
+.ar-open-items-secondary-filters__divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+}
+
+.ar-open-items-date-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.ar-open-items-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--app-bg);
+  border: 1px solid var(--border);
+  color: var(--secondary-text);
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.ar-open-items-chip:hover {
+  border-color: #CBD5E1;
+  color: var(--primary-text);
+}
+
+.ar-open-items-chip--active {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.ar-open-items-company-select {
+  background: var(--app-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary-text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  max-width: 220px;
+}
+
+.ar-open-items-company-select:focus {
+  background: #FFFFFF;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(90, 102, 255, 0.12);
+}
+
+.ar-open-items-clear-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--primary-blue);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.3rem 0.2rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.ar-open-items-clear-filters-btn:hover {
+  text-decoration: underline;
+}
+
+.ar-open-items-table {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.ar-open-items-table__head,
+.ar-open-items-row {
+  min-width: fit-content;
+}
+
+.ar-open-items-table__head {
+  display: grid;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.7rem 1.1rem;
+  background: var(--app-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.ar-open-items-table__head-cell {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--secondary-text);
+  line-height: 1.35;
+}
+
+.ar-open-items-table__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.ar-open-items-row-group {
+  border-bottom: 1px solid var(--border);
+}
+
+.ar-open-items-row-group:last-child {
+  border-bottom: none;
+}
+
+.ar-open-items-row-group--expanded {
+  background: #FAFBFF;
+}
+
+.ar-open-items-row {
+  display: grid;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ar-open-items-row-group:not(.ar-open-items-row-group--expanded) .ar-open-items-row:hover {
+  background: #FAFAFA;
+}
+
+.ar-open-items-row__expand-icon {
+  display: flex;
+  align-items: center;
+  color: var(--secondary-text);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.ar-open-items-row-group--expanded .ar-open-items-row__expand-icon {
+  transform: rotate(90deg);
+  color: var(--primary-blue);
+}
+
+.ar-open-items-row__cell {
+  font-size: 0.83rem;
+  color: var(--primary-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ar-open-items-row__action {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.ar-open-items-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ar-open-items-action-btn--primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);
+}
+
+.ar-open-items-action-btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+  filter: brightness(1.05);
+}
+
+.ar-open-items-action-btn--posted {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  cursor: default;
+}
+
+.ar-open-items-action-btn--hold {
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+  cursor: not-allowed;
+}
+
+.ar-open-items-detail-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.85rem 1.5rem;
+  padding: 0 1.1rem 1.1rem 3.6rem;
+}
+
+.ar-open-items-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.ar-open-items-detail-field__label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--secondary-text);
+}
+
+.ar-open-items-detail-field__value {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--primary-text);
+  overflow-wrap: break-word;
+}
+
+.ar-open-items-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5rem 1.5rem;
+  color: var(--secondary-text);
+  text-align: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
 /* ==========================================================================
    RFQ (Request for Quote) Enterprise Workflow & Landing Styling
    ========================================================================== */

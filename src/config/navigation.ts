@@ -37,7 +37,16 @@ export const navigationConfig: NavigationItem[] = [
   { path: '/reports', label: 'Reports', iconName: 'BarChart3', hasChevron: true },
   { path: '/master-reports', label: 'Master Reports', iconName: 'FileSpreadsheet', hasChevron: true },
   { path: '/ap', label: 'AP', iconName: 'ArrowDownLeft', hasChevron: true },
-  { path: '/ar', label: 'AR', iconName: 'ArrowUpRight', hasChevron: true },
+  {
+    path: '/ar',
+    label: 'AR',
+    iconName: 'ArrowUpRight',
+    hasChevron: true,
+    children: [
+      { path: '/ar/inbox', label: 'Inbox' },
+      { path: '/ar/open-items', label: 'Open Items' },
+    ],
+  },
   { path: '/fscp', label: 'FSCP', iconName: 'ShieldCheck', hasChevron: true },
   { path: '/schema', label: 'Schema', iconName: 'Database' },
   { path: '/config', label: 'Config', iconName: 'Settings' },

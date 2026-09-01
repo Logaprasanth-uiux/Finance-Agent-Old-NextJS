@@ -1,7 +1,5 @@
-"use client";
+import { redirect } from 'next/navigation';
 
-import { ARPage } from '@/pages-components/ARPage';
-
-export default function ARRoutePage() {
-  return <ARPage />;
+export default function ARRootPage() {
+  redirect('/ar/inbox');
 }

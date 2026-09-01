@@ -10,6 +10,7 @@ export const Sidebar = () => {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
     '/transact': true, // Default open for Transact so RFQ and sub-items are visible
+    '/ar': true, // Default open for AR so Inbox and Open Items are visible
   });
 
   const toggleSubmenu = (path: string, e: React.MouseEvent) => {
