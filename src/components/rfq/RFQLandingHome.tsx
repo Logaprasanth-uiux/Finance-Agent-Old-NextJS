@@ -165,7 +165,7 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
 
   const renderCardAction = (rfq: RFQRecord) => {
     // 1. Draft RFQs -> Continue Editing
-    if (rfq.status === 'Draft' || (!rfq.isLocked && rfq.status === 'Draft')) {
+    if (rfq.status === 'Draft') {
       return (
         <button
           type="button"

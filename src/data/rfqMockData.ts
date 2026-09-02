@@ -1,4 +1,4 @@
-import type { CatalogItem, Vendor, RFQRecord } from '../types/rfq';
+import type { CatalogItem, Vendor, RFQRecord, VendorQuotation, VendorResponse } from '../types/rfq';
 
 export const mockCatalogItems: CatalogItem[] = [
   {
