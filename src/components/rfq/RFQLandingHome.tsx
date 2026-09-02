@@ -42,9 +42,10 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
 
   const awaitingCount = runningRFQs.filter(
     (r) =>
-      r.status === 'Awaiting Quotations' ||
-      r.status === 'Sent to Vendors' ||
-      (r.quotesReceivedCount === 0 && r.status !== 'Draft')
+      r.isLocked &&
+      (r.status === 'Awaiting Quotations' ||
+        r.status === 'Sent to Vendors' ||
+        r.quotesReceivedCount === 0)
   ).length;
 
   const receivedCount = runningRFQs.filter(
@@ -61,9 +62,10 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
     if (filterTab === 'ALL') return true;
     if (filterTab === 'AWAITING') {
       return (
-        rfq.status === 'Awaiting Quotations' ||
-        rfq.status === 'Sent to Vendors' ||
-        (rfq.quotesReceivedCount === 0 && rfq.status !== 'Draft')
+        rfq.isLocked &&
+        (rfq.status === 'Awaiting Quotations' ||
+          rfq.status === 'Sent to Vendors' ||
+          rfq.quotesReceivedCount === 0)
       );
     }
     if (filterTab === 'RECEIVED') {
@@ -78,15 +80,16 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
     return true;
   });
 
-  const getStatusBadge = (status: RFQRecord['status']) => {
-    switch (status) {
-      case 'Draft':
-        return (
-          <span className="rfq-landing-badge rfq-landing-badge--draft">
-            <Edit3 size={11} />
-            Draft
-          </span>
-        );
+  const getStatusBadge = (rfq: RFQRecord) => {
+    if (!rfq.isLocked) {
+      return (
+        <span className="rfq-landing-badge rfq-landing-badge--draft">
+          <Edit3 size={11} />
+          Draft
+        </span>
+      );
+    }
+    switch (rfq.status) {
       case 'Closing Soon':
         return (
           <span className="rfq-landing-badge rfq-landing-badge--urgent">
@@ -125,14 +128,14 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
       default:
         return (
           <span className="rfq-landing-badge rfq-landing-badge--draft">
-            {status}
+            {rfq.status}
           </span>
         );
     }
   };
 
   const getTimeRemainingTag = (rfq: RFQRecord) => {
-    if (rfq.status === 'Draft') {
+    if (!rfq.isLocked) {
       return (
         <span className="rfq-time-pill rfq-time-pill--draft">
           <Edit3 size={11} />
@@ -164,8 +167,8 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
   };
 
   const renderCardAction = (rfq: RFQRecord) => {
-    // 1. Draft RFQs -> Continue Editing
-    if (rfq.status === 'Draft') {
+    // 1. Unlocked / Draft RFQs -> Continue Editing
+    if (!rfq.isLocked) {
       return (
         <button
           type="button"
@@ -339,7 +342,7 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
           {filteredRunningRFQs.map((rfq) => (
             <div
               key={rfq.id}
-              className={`rfq-dashboard-card ${rfq.isUrgent ? 'rfq-dashboard-card--urgent' : ''} ${rfq.status === 'Draft' ? 'rfq-dashboard-card--draft' : ''}`}
+              className={`rfq-dashboard-card ${rfq.isUrgent ? 'rfq-dashboard-card--urgent' : ''} ${!rfq.isLocked ? 'rfq-dashboard-card--draft' : ''}`}
             >
               {/* Card Top Row */}
               <div className="rfq-dashboard-card__top">
@@ -348,7 +351,7 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
                   <span className="rfq-dashboard-card__category">{rfq.category}</span>
                 </div>
                 <div className="rfq-dashboard-card__badges">
-                  {getStatusBadge(rfq.status)}
+                  {getStatusBadge(rfq)}
                 </div>
               </div>
 
@@ -410,7 +413,7 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
                     Created: {rfq.createdDate}
                   </span>
                   <span className="rfq-dashboard-card__due">
-                    {rfq.status === 'Draft' ? 'Target: ' : 'Closes: '}
+                    {!rfq.isLocked ? 'Target: ' : 'Closes: '}
                     {rfq.deadlineDate}
                   </span>
                 </div>
@@ -448,7 +451,7 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
                   <span className="rfq-dashboard-card__num">{rfq.rfqNumber}</span>
                   <span className="rfq-dashboard-card__category">{rfq.category}</span>
                 </div>
-                {getStatusBadge(rfq.status)}
+                {getStatusBadge(rfq)}
               </div>
 
               <div className="rfq-dashboard-card__body">

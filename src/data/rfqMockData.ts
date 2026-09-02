@@ -556,7 +556,7 @@ export const mockCompanyRFQs: Record<
         createdDate: '28 Aug 2026',
         deadlineDate: '08 Sep 2026',
         timeRemaining: 'Draft in preparation',
-        status: 'Draft',
+        status: 'Awaiting Quotations',
         isLocked: false,
         estimatedBudget: 2100000,
         quotesReceivedCount: 0,

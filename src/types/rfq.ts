@@ -65,7 +65,6 @@ export interface RFQSubmissionResult {
 }
 
 export type RFQStatus =
-  | 'Draft'
   | 'Sent to Vendors'
   | 'Awaiting Quotations'
   | 'Quotations Received'

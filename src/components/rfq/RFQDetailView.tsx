@@ -50,8 +50,6 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
 
   const getStatusBadge = (status: RFQRecord['status']) => {
     switch (status) {
-      case 'Draft':
-        return <span className="rfq-badge rfq-badge--draft">Draft</span>;
       case 'Quotations Received':
         return <span className="rfq-badge rfq-badge--green">Quotations Received</span>;
       case 'Awaiting Quotations':
@@ -60,6 +58,7 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
         return <span className="rfq-badge rfq-badge--amber">Closing Soon</span>;
       case 'Closed':
         return <span className="rfq-badge rfq-badge--gray">Closed / Awarded</span>;
+      case 'Sent to Vendors':
       default:
         return <span className="rfq-badge rfq-badge--indigo">{status}</span>;
     }
