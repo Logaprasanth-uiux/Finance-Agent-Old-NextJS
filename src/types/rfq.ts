@@ -54,6 +54,7 @@ export interface RFQVendorSubmissionStatus {
 
 export interface RFQSubmissionResult {
   rfqNumber: string;
+  company?: string;
   createdDate: string;
   quoteDueDate: string;
   deliveryLocation: string;
@@ -71,9 +72,50 @@ export type RFQStatus =
   | 'Closing Soon'
   | 'Closed';
 
+export interface QuotedItem {
+  itemId: string;
+  itemName: string;
+  model: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface VendorQuotation {
+  quotationNumber: string;
+  vendorId: string;
+  vendorName: string;
+  submittedDate: string;
+  submittedTime: string;
+  quotedItems: QuotedItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  totalAmount: number;
+  deliveryTimeline: string;
+  paymentTerms: string;
+  validityDate: string;
+  vendorComments: string;
+}
+
+export interface VendorResponse {
+  vendorId: string;
+  vendorName: string;
+  status: 'Quotation Received' | 'Awaiting Response' | 'Quotation Approved';
+  quotationValue?: number;
+  submittedDate?: string;
+  submittedTime?: string;
+  quotation?: VendorQuotation;
+  sentDate?: string;
+  responseDeadline?: string;
+  approvedDate?: string;
+}
+
 export interface RFQRecord {
   id: string;
   rfqNumber: string;
+  company?: string;
   title: string;
   itemsSummary: string;
   itemCount: number;
@@ -88,5 +130,12 @@ export interface RFQRecord {
   estimatedBudget?: number;
   quotesReceivedCount?: number;
   category: string;
+  isLocked?: boolean;
+  deliveryLocation?: string;
+  notes?: string;
+  itemsDetail?: RFQItemSelection[];
+  vendorResponses?: VendorResponse[];
 }
+
+
 

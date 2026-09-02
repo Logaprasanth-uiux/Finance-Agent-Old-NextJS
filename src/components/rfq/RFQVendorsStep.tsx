@@ -73,6 +73,10 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
 
   return (
     <div className="rfq-step-layout">
+      {/* Clean Step Heading */}
+      <div className="rfq-step-heading-row">
+        <h2 className="rfq-step-main-title">Step 3: Supplier &amp; Vendor Selection</h2>
+      </div>
       {/* Selected Vendors Bar */}
       <div className="rfq-vendors-summary-bar">
         <div className="rfq-vendors-summary-bar__left">

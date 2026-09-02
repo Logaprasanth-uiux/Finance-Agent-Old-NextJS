@@ -24,6 +24,7 @@ import {
 interface RFQReviewStepProps {
   selectedItems: RFQItemSelection[];
   selectedVendors: Vendor[];
+  selectedCompany?: string;
   onReset: () => void;
   onSendSuccess?: (result: RFQSubmissionResult) => void;
   isSubmitting?: boolean;
@@ -40,6 +41,7 @@ interface RFQReviewStepProps {
 export const RFQReviewStep: React.FC<RFQReviewStepProps> = ({
   selectedItems,
   selectedVendors,
+  selectedCompany = 'Acme Technologies Pvt Ltd',
   onReset,
   isSubmitting = false,
   submissionResult,
@@ -70,7 +72,7 @@ export const RFQReviewStep: React.FC<RFQReviewStepProps> = ({
               {submissionResult.rfqNumber} Sent Successfully!
             </h2>
             <p className="rfq-success-banner__desc">
-              Request for quotation has been dispatched to <strong>{submissionResult.vendors.length} qualified suppliers</strong>. Automated email notifications and digital quotation submission links have been issued.
+              Request for quotation has been dispatched on behalf of <strong>{submissionResult.company || selectedCompany}</strong> to <strong>{submissionResult.vendors.length} qualified suppliers</strong>. Automated email notifications and digital quotation submission links have been issued.
             </p>
           </div>
         </div>
@@ -198,6 +200,11 @@ export const RFQReviewStep: React.FC<RFQReviewStepProps> = ({
   // Pre-submission Review View
   return (
     <div className="rfq-step-layout">
+      {/* Clean Step Heading */}
+      <div className="rfq-step-heading-row">
+        <h2 className="rfq-step-main-title">Step 4: Final Review &amp; Dispatch</h2>
+      </div>
+
       <div className="rfq-review-grid">
         {/* Left Column: Scope & Specifications Summary */}
         <div className="rfq-review-main-pane">
@@ -363,6 +370,21 @@ export const RFQReviewStep: React.FC<RFQReviewStepProps> = ({
         <div className="rfq-review-sidebar-pane">
           <div className="rfq-review-section-card rfq-review-section-card--sidebar">
             <h3 className="rfq-review-sidebar-title">Procurement Parameters</h3>
+
+            {/* Issuing Legal Entity */}
+            <div className="rfq-form-group">
+              <label className="rfq-form-label">
+                <Building2 size={14} className="rfq-icon-indigo" />
+                <span>Company / Issuing Legal Entity</span>
+              </label>
+              <div className="rfq-review-company-display">
+                <div className="rfq-review-company-display__inner">
+                  <Building2 size={15} className="rfq-icon-indigo" />
+                  <span className="rfq-review-company-name">{selectedCompany}</span>
+                </div>
+                <span className="rfq-review-company-tag">Owner / Issuer</span>
+              </div>
+            </div>
 
             <div className="rfq-form-group">
               <label className="rfq-form-label">

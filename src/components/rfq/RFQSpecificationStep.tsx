@@ -119,6 +119,11 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
 
   return (
     <div className="rfq-step-layout">
+      {/* Clean Step Heading */}
+      <div className="rfq-step-heading-row">
+        <h2 className="rfq-step-main-title">Step 2: Technical Specifications &amp; AI Enrichment</h2>
+      </div>
+
       {/* Multi-Item Context Switcher Tabs */}
       {selectedItems.length > 1 && (
         <div className="rfq-item-tabs">

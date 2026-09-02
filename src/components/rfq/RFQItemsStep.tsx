@@ -12,10 +12,13 @@ import {
   Layers,
   SlidersHorizontal,
   PackagePlus,
+  Building2,
+  Lock,
 } from 'lucide-react';
 
 interface RFQItemsStepProps {
   selectedItems: RFQItemSelection[];
+  selectedCompany?: string;
   onAddItem: (item: CatalogItem, quantity?: number) => void;
   onRemoveItem: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
@@ -24,6 +27,7 @@ interface RFQItemsStepProps {
 
 export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
   selectedItems,
+  selectedCompany = 'Acme Technologies Pvt Ltd',
   onAddItem,
   onRemoveItem,
   onUpdateQuantity,
@@ -58,6 +62,26 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
 
   return (
     <div className="rfq-step-layout">
+      {/* Clean Step Heading */}
+      <div className="rfq-step-heading-row">
+        <h2 className="rfq-step-main-title">Step 1: Select Items &amp; Quantities</h2>
+      </div>
+
+      {/* Active Company Context Banner - Compact & Clean */}
+      <div className="rfq-step-company-banner">
+        <div className="rfq-step-company-banner__icon">
+          <Building2 size={16} />
+        </div>
+        <div className="rfq-step-company-banner__content">
+          <span className="rfq-step-company-banner__label">Company / Legal Entity Context</span>
+          <h4 className="rfq-step-company-banner__name">{selectedCompany}</h4>
+        </div>
+        <div className="rfq-step-company-banner__status">
+          <Lock size={12} />
+          <span>Context Fixed for RFQ</span>
+        </div>
+      </div>
+
       <div className="rfq-items-grid-container">
         {/* Left Column: Available Catalog Items */}
         <div className="rfq-catalog-pane">
