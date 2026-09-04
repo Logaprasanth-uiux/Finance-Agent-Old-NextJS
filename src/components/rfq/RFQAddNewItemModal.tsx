@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useRef } from 'react';
+import { API_ENDPOINTS } from '../../config/api';
+import * as XLSX from 'xlsx';
 import type { CatalogItem } from '../../types/rfq';
 import {
   PackagePlus,
@@ -53,6 +55,7 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
   const [fileSize, setFileSize] = useState<string | null>(null);
   const [parsedItems, setParsedItems] = useState<ParsedUploadItem[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,8 +72,9 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
     document.body.removeChild(link);
   };
 
-  const parseCSVText = (text: string, originalFileName: string) => {
+  const parseCSVText = async (text: string, originalFileName: string) => {
     try {
+      setIsValidating(true);
       const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
       if (lines.length < 2) {
         setErrorMessage('The uploaded file appears to be empty or missing data rows.');
@@ -109,16 +113,28 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
 
       const items: ParsedUploadItem[] = [];
 
+      // Fetch DB items for validation
+      let dbItems: any[] = [];
+      try {
+        const res = await fetch(API_ENDPOINTS.items);
+        if (res.ok) {
+          const data = await res.json();
+          dbItems = Array.isArray(data) ? data : (data.Items || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch Item Master:", err);
+      }
+
       for (let i = 1; i < lines.length; i++) {
         const row = splitCSVLine(lines[i]);
         if (row.length === 0 || row.every((c) => !c)) continue;
 
-        const rawName = nameIdx !== -1 ? row[nameIdx] : row[0] || '';
-        const rawModel = modelIdx !== -1 ? row[modelIdx] : row[1] || `ITM-${1000 + i}`;
-        const rawCat = catIdx !== -1 ? row[catIdx] : row[2] || 'Enterprise Hardware';
-        const rawQtyStr = qtyIdx !== -1 ? row[qtyIdx] : row[3] || '10';
-        const rawUnit = unitIdx !== -1 ? row[unitIdx] : row[4] || 'Nos';
-        const rawSpecs = specsIdx !== -1 ? row[specsIdx] : row[5] || '';
+        const rawName = nameIdx !== -1 ? row[nameIdx] : (row[0] || '');
+        const rawModel = modelIdx !== -1 ? row[modelIdx] : '';
+        const rawCat = catIdx !== -1 ? row[catIdx] : '';
+        const rawQtyStr = qtyIdx !== -1 ? row[qtyIdx] : '1';
+        const rawUnit = unitIdx !== -1 ? row[unitIdx] : 'Nos';
+        const rawSpecs = specsIdx !== -1 ? row[specsIdx] : '';
 
         const qtyNum = parseInt(rawQtyStr.replace(/[^\d]/g, ''), 10);
         const qty = !isNaN(qtyNum) && qtyNum > 0 ? qtyNum : 10;
@@ -131,44 +147,58 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
           validationError = 'Item Name is required';
         }
 
-        // Parse Specs
-        const baseSpecs: { id: string; key: string; value: string; source: 'item-master' | 'custom' }[] = [];
-        if (rawSpecs) {
-          const specPairs = rawSpecs.split(/;|\|/).map((s) => s.trim()).filter(Boolean);
-          specPairs.forEach((pair, sIdx) => {
-            if (pair.includes(':')) {
-              const [k, v] = pair.split(':');
-              baseSpecs.push({
-                id: `spec-up-${i}-${sIdx}`,
-                key: k.trim(),
-                value: v.trim(),
-                source: 'item-master',
-              });
-            } else {
-              baseSpecs.push({
-                id: `spec-up-${i}-${sIdx}`,
-                key: `Spec ${sIdx + 1}`,
-                value: pair.trim(),
-                source: 'item-master',
-              });
-            }
-          });
-        }
+        const matchedDbItem = dbItems.find(db => 
+          db.itemname && db.itemname.toLowerCase() === rawName.toLowerCase()
+        );
 
-        if (baseSpecs.length === 0) {
-          baseSpecs.push(
-            { id: `spec-up-${i}-1`, key: 'Classification', value: rawCat, source: 'item-master' },
-            { id: `spec-up-${i}-2`, key: 'Standard Warranty', value: '1 Year Standard Enterprise Support', source: 'item-master' }
-          );
+        let finalItemId = `up-item-${Date.now()}-${i}`;
+        let baseSpecs: { id: string; key: string; value: string; source: 'item-master' | 'custom' }[] = [];
+
+        if (matchedDbItem) {
+           finalItemId = matchedDbItem.itemid;
+           // Fetch product specs
+           try {
+              const specRes = await fetch(API_ENDPOINTS.productSpecs(finalItemId));
+              if (specRes.ok) {
+                 const specData = await specRes.json();
+                 const specsArray = Array.isArray(specData) ? specData : (specData.items || []);
+                 if (specsArray.length > 0) {
+                     baseSpecs = specsArray.map((sp: any, spIdx: number) => ({
+                         id: `db-spec-${finalItemId}-${spIdx}`,
+                         key: sp.feature || `Spec ${spIdx + 1}`,
+                         value: sp.detail_requirement || '',
+                         source: 'item-master'
+                     }));
+                 }
+              }
+           } catch (e) {
+              console.error("Failed to fetch specs for", finalItemId, e);
+           }
+
+        } else if (isValid) {
+           isValid = false;
+           validationError = "Item not present in Item Master. Please create this item first.";
+           // Continue processing to show preview anyway
+           if (rawSpecs) {
+             const specPairs = rawSpecs.split(/;|\|/).map((s) => s.trim()).filter(Boolean);
+             specPairs.forEach((pair, sIdx) => {
+               if (pair.includes(':')) {
+                 const [k, v] = pair.split(':');
+                 baseSpecs.push({ id: `spec-up-${i}-${sIdx}`, key: k.trim(), value: v.trim(), source: 'item-master' });
+               } else {
+                 baseSpecs.push({ id: `spec-up-${i}-${sIdx}`, key: `Spec ${sIdx + 1}`, value: pair.trim(), source: 'item-master' });
+               }
+             });
+           }
         }
 
         items.push({
-          id: `up-item-${Date.now()}-${i}`,
-          name: rawName || `Unnamed Item (Row ${i})`,
-          model: rawModel || `MOD-${1000 + i}`,
-          category: rawCat || 'Hardware / Equipment',
+          id: finalItemId,
+          name: matchedDbItem ? matchedDbItem.itemname : (rawName || `Unnamed Item (Row ${i})`),
+          model: matchedDbItem ? (matchedDbItem.linkref1 || rawModel) : (rawModel || ''),
+          category: matchedDbItem ? (matchedDbItem.itemgroup || rawCat) : (rawCat || 'Uncategorized'),
           quantity: qty,
-          unit: rawUnit || 'Nos',
+          unit: matchedDbItem ? (matchedDbItem.unit || rawUnit) : (rawUnit || 'Nos'),
           specsSummary: baseSpecs.map((s) => `${s.key}: ${s.value}`).join(' · '),
           baseSpecs,
           isValid,
@@ -181,6 +211,8 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
     } catch (err) {
       console.error(err);
       setErrorMessage('Failed to parse file. Please ensure it is a valid CSV or Excel text document.');
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -198,67 +230,40 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result;
-      if (typeof content === 'string') {
-        parseCSVText(content, file.name);
+      
+      if (isCSV) {
+        if (typeof content === 'string') {
+          await parseCSVText(content, file.name);
+        }
       } else {
-        // Fallback demo parsed items for Excel files
-        setParsedItems([
-          {
-            id: `up-item-${Date.now()}-1`,
-            name: 'Dell UltraSharp 32" 4K Monitor',
-            model: 'U3223QE',
-            category: 'Peripherals / Displays',
-            quantity: 15,
-            unit: 'Nos',
-            specsSummary: 'Panel: IPS Black 4K · Color: 100% sRGB · Ports: USB-C Hub 90W',
-            baseSpecs: [
-              { id: 'sp-1', key: 'Panel Type', value: 'IPS Black 4K', source: 'item-master' },
-              { id: 'sp-2', key: 'Color Accuracy', value: '100% sRGB, 98% DCI-P3', source: 'item-master' },
-              { id: 'sp-3', key: 'Power Delivery', value: 'USB-C 90W PD', source: 'item-master' },
-            ],
-            isValid: true,
-          },
-          {
-            id: `up-item-${Date.now()}-2`,
-            name: 'MacBook Pro 16" M3 Max',
-            model: 'MBP-M3-16',
-            category: 'Computing / Laptops',
-            quantity: 10,
-            unit: 'Nos',
-            specsSummary: 'Chip: Apple M3 Max · RAM: 36GB · Storage: 1TB SSD',
-            baseSpecs: [
-              { id: 'sp-4', key: 'Processor', value: 'Apple M3 Max (14-core CPU)', source: 'item-master' },
-              { id: 'sp-5', key: 'Memory', value: '36GB Unified Memory', source: 'item-master' },
-              { id: 'sp-6', key: 'Storage', value: '1TB PCIe SSD', source: 'item-master' },
-            ],
-            isValid: true,
-          },
-          {
-            id: `up-item-${Date.now()}-3`,
-            name: 'Logitech MX Master 3S Wireless Mouse',
-            model: 'MX-M3S-GR',
-            category: 'Peripherals / Input Devices',
-            quantity: 25,
-            unit: 'Nos',
-            specsSummary: 'Sensor: 8000 DPI · Quiet Clicks · Bluetooth + Bolt',
-            baseSpecs: [
-              { id: 'sp-7', key: 'Sensor', value: 'Darkfield 8000 DPI Laser', source: 'item-master' },
-              { id: 'sp-8', key: 'Wireless', value: 'Bluetooth Low Energy & Bolt USB', source: 'item-master' },
-            ],
-            isValid: true,
-          },
-        ]);
-        setErrorMessage(null);
+        // XLSX Handling
+        if (content && typeof content !== 'string') {
+          try {
+            setIsValidating(true);
+            const data = new Uint8Array(content as ArrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const csvContent = XLSX.utils.sheet_to_csv(worksheet);
+            await parseCSVText(csvContent, file.name);
+          } catch (err) {
+            console.error("Failed to parse XLSX:", err);
+            setErrorMessage('Failed to parse Excel file. It might be corrupted or unsupported.');
+            setParsedItems([]);
+          } finally {
+            setIsValidating(false);
+          }
+        }
       }
     };
 
     if (isCSV) {
       reader.readAsText(file);
     } else {
-      // For XLSX, read as text/binary
-      reader.readAsText(file);
+      // For XLSX, read as ArrayBuffer for proper binary parsing
+      reader.readAsArrayBuffer(file);
     }
   };
 
@@ -429,10 +434,17 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
                   </div>
 
                   <div className="rfq-upload-selected-file__right">
+                    {isValidating && (
+                       <span style={{ fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginRight: '1rem' }}>
+                         <div style={{ width: '14px', height: '14px', border: '2px solid #64748b', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                         Validating...
+                       </span>
+                    )}
                     <button
                       type="button"
                       onClick={handleClearFile}
                       className="rfq-btn rfq-btn--xs rfq-btn--outline rfq-upload-clear-btn"
+                      disabled={isValidating}
                     >
                       <Trash2 size={13} />
                       <span>Remove / Re-upload</span>
@@ -498,7 +510,6 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
                         <tr>
                           <th>Status</th>
                           <th>Item Name</th>
-                          <th>Model / Code</th>
                           <th>Category</th>
                           <th>Quantity</th>
                           <th>Specifications</th>
@@ -531,9 +542,6 @@ export const RFQAddNewItemModal: React.FC<RFQAddNewItemModalProps> = ({
                                   {item.validationError}
                                 </span>
                               )}
-                            </td>
-                            <td>
-                              <code className="rfq-code-tag">{item.model}</code>
                             </td>
                             <td>
                               <span className="rfq-cat-tag">{item.category}</span>

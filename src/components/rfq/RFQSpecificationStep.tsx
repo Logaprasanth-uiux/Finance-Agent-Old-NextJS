@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { API_ENDPOINTS } from '../../config/api';
 import type { RFQItemSelection, ItemSpecification } from '../../types/rfq';
 import {
@@ -15,14 +15,27 @@ import {
   LayoutList
 } from 'lucide-react';
 
+const DEFAULT_COMMERCIAL_PARAMETERS: ItemSpecification[] = [
+  { id: 'comm-default-1', key: 'Unit Price', value: 'Specify per-unit price without taxes', source: 'item-master', category: 'Commercial Parameter', specGroup: 'commercial' },
+  { id: 'comm-default-2', key: 'Warranty', value: '3 Years Comprehensive Warranty', source: 'item-master', category: 'Commercial Parameter', specGroup: 'commercial' },
+  { id: 'comm-default-3', key: 'GST %', value: '18% Standard GST', source: 'item-master', category: 'Commercial Parameter', specGroup: 'commercial' },
+  { id: 'comm-default-4', key: 'Payment Terms', value: '30 Days Net Credit', source: 'item-master', category: 'Commercial Parameter', specGroup: 'commercial' },
+  { id: 'comm-default-5', key: 'Delivery Lead Time', value: '2-3 Weeks from PO', source: 'item-master', category: 'Commercial Parameter', specGroup: 'commercial' },
+  { id: 'comm-default-6', key: 'Quotation Validity', value: '30 Days from Submission', source: 'item-master', category: 'Commercial Parameter', specGroup: 'commercial' }
+];
+
 interface RFQSpecificationStepProps {
   selectedItems: RFQItemSelection[];
   onUpdateSpecifications: (itemId: string, specs: ItemSpecification[]) => void;
+  selectedCompany?: string;
+  userAccessOrgs?: { orgid: string; orgname: string }[];
 }
 
 export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
   selectedItems,
   onUpdateSpecifications,
+  selectedCompany,
+  userAccessOrgs = [],
 }) => {
   const [activeItemIndex, setActiveItemIndex] = useState<number>(0);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -31,10 +44,18 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
   const [editKey, setEditKey] = useState<string>('');
   const [editVal, setEditVal] = useState<string>('');
 
+  const currentOrg = userAccessOrgs.find((o) => o.orgname === selectedCompany);
+  const currentOrgId = currentOrg?.orgid || 'OM0000000001';
+  const currentOrgName = selectedCompany || currentOrg?.orgname || 'Demo Technologies Private Limited';
+
   const [addingAfterId, setAddingAfterId] = useState<string | null>(null);
   const [customKey, setCustomKey] = useState<string>('');
   const [customVal, setCustomVal] = useState<string>('');
   const [customGroup, setCustomGroup] = useState<'product' | 'commercial'>('product');
+
+
+
+
 
   const currentSelection = selectedItems[activeItemIndex] || selectedItems[0];
   if (!currentSelection) {
@@ -75,14 +96,41 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
         if (commRes.ok) {
           const data = await commRes.json();
           if (Array.isArray(data)) {
-            commParams = data.map((item: any, index: number) => ({
-              id: `api-com-${Date.now()}-${index}`,
-              key: item.parameter_name || item.name || item.key || `Parameter ${index + 1}`,
-              value: item.default_value || item.value || item.description || '',
-              source: 'api' as const,
-              category: 'Commercial Parameter',
-              specGroup: 'commercial' as const,
-            }));
+            const extractedParams: ItemSpecification[] = [];
+            data.forEach((item: any, index: number) => {
+              if (item.parameter_name || item.name || item.key) {
+                extractedParams.push({
+                  id: `api-com-${Date.now()}-${index}`,
+                  key: item.parameter_name || item.name || item.key,
+                  value: item.default_value || item.value || item.description || '',
+                  source: 'api' as const,
+                  category: 'Commercial Parameter',
+                  specGroup: 'commercial' as const,
+                });
+              } else {
+                const commFields: { key: string; val: any }[] = [
+                  { key: 'Unit Price', val: item.unit_price },
+                  { key: 'GST %', val: item.gst_percentage },
+                  { key: 'Payment Terms', val: item.payment_terms },
+                  { key: 'Delivery Lead Time', val: item.delivery_lead_time },
+                  { key: 'Quotation Validity', val: item.quotation_validity },
+                  { key: 'Warranty', val: item.warranty },
+                ];
+                commFields.forEach((field, fIdx) => {
+                  if (field.val !== null && field.val !== undefined && field.val !== '') {
+                    extractedParams.push({
+                      id: `api-com-${Date.now()}-${index}-${fIdx}`,
+                      key: field.key,
+                      value: String(field.val),
+                      source: 'api' as const,
+                      category: 'Commercial Parameter',
+                      specGroup: 'commercial' as const,
+                    });
+                  }
+                });
+              }
+            });
+            commParams = extractedParams;
           }
         }
       } catch (err) {
@@ -143,8 +191,16 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
         rationale: `Standard commercial requirement (${c.field})`
       }));
 
-      const finalProductSpecs = productSpecs.length > 0 ? productSpecs : newSuggestions.map((s) => ({ ...s, specGroup: 'product' as const }));
-      const finalCommParams = commParams.length > 0 ? commParams : fallbackCommercial;
+      const finalProductSpecs = (productSpecs.length > 0 ? productSpecs : newSuggestions).map((s) => ({
+        ...s,
+        specGroup: 'product' as const,
+        isAccepted: false,
+      }));
+      const finalCommParams = (commParams.length > 0 ? commParams : fallbackCommercial).map((s) => ({
+        ...s,
+        specGroup: 'commercial' as const,
+        isAccepted: false,
+      }));
 
       const merged = [
         ...currentSelection.specifications,
@@ -175,26 +231,31 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
     const commSpecs = currentSelection.specifications.filter(s => s.specGroup === 'commercial');
 
     try {
-      // 1. Post product specifications
+      // 1. Post product specifications with org_id, org_name, item_id, item_name, feature, detail_requirement
       for (const spec of productSpecs) {
         await fetch(API_ENDPOINTS.productSpecsBase, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            org_id: 'ORG001',
+            org_id: currentOrgId,
+            org_name: currentOrgName,
             item_id: currentSelection.item.id,
+            item_name: currentSelection.item.name,
             feature: spec.key,
             detail_requirement: spec.value,
           })
         });
       }
 
-      // 2. Post commercial parameters
-      // Attempt to map our generic keys to the specific CommercialParametersBase schema fields
+      // 2. Post commercial parameters with org_id, org_name, item_id, item_name, vendor_id, vendor_name, vendor_email_id
       const commPayload: any = {
-        org_id: 'ORG001',
+        org_id: currentOrgId,
+        org_name: currentOrgName,
         item_id: currentSelection.item.id,
-        vendor_id: 'VD-ALL', // Placeholder since specs here are per-item, not per-vendor yet
+        item_name: currentSelection.item.name,
+        vendor_id: 'VD-ALL',
+        vendor_name: 'All Vendors',
+        vendor_email_id: 'all@vendors.com',
       };
 
       commSpecs.forEach(spec => {
@@ -222,7 +283,7 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
   };
 
   const handleRejectAllAI = () => {
-    const updated = currentSelection.specifications.filter((s) => s.source !== 'ai-suggested');
+    const updated = currentSelection.specifications.filter((s) => s.source !== 'ai-suggested' && s.source !== 'api');
     onUpdateSpecifications(currentSelection.item.id, updated);
   };
 
@@ -281,14 +342,18 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
     setAddingAfterId(null);
   };
 
-  const productSpecs = currentSelection.specifications.filter((s) => s.specGroup !== 'commercial');
-  const commercialSpecs = currentSelection.specifications.filter((s) => s.specGroup === 'commercial');
+  const productSpecs = currentSelection.specifications.filter(
+    (s) => s.specGroup !== 'commercial' && s.key.toLowerCase() !== 'classification'
+  );
+  const commercialSpecs = currentSelection.specifications.filter(
+    (s) => s.specGroup === 'commercial' && !s.key.toLowerCase().startsWith('parameter')
+  );
 
   const aiSpecs = currentSelection.specifications.filter(
-    (s) => s.source === 'ai-suggested'
+    (s) => s.source === 'ai-suggested' || s.source === 'api'
   );
   const hasAIApplied = aiSpecs.length > 0;
-  const pendingAISpecs = aiSpecs.filter(s => !s.isAccepted);
+  const pendingAISpecs = aiSpecs.filter((s) => !s.isAccepted);
   const hasPendingAI = pendingAISpecs.length > 0;
 
   return (
@@ -297,6 +362,8 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
       <div className="rfq-step-heading-row">
         <h2 className="rfq-step-main-title">Step 2: Technical Specifications &amp; AI Enrichment</h2>
       </div>
+
+
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {selectedItems.map((sel, idx) => {
@@ -400,7 +467,7 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
                         AI Spec Analysis Complete: {pendingAISpecs.length} Procurement Additions Suggested
                       </div>
                       <div className="rfq-ai-callout__desc">
-                        Identified key enterprise criteria missing from base Item Master (Warranty, Port Standards, Battery, and Support SLA). You can accept, edit, or remove each item before finalizing.
+                        Identified key enterprise criteria missing from base Item Master. You can accept all, reject all, or modify individual specifications below.
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -710,6 +777,7 @@ export const RFQSpecificationStep: React.FC<RFQSpecificationStepProps> = ({
           </div>
         );
       })}
+      </div>
     </div>
   );
 };

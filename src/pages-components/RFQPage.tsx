@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config/api';
 import type {
   CatalogItem,
   RFQItemSelection,
@@ -33,10 +34,32 @@ export const RFQPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<RFQStep>(1);
   const [completedSteps, setCompletedSteps] = useState<RFQStep[]>([]);
 
-  // Company / Legal Entity Context (Context for the entire RFQ workspace)
-  const [selectedCompany, setSelectedCompany] = useState<string>(
-    mockRFQCompanies[0]
-  );
+  // Organization / UserAccess State fetched from backend
+  const [userAccessOrgs, setUserAccessOrgs] = useState<{ orgid: string; orgname: string }[]>([]);
+  const [companiesList, setCompaniesList] = useState<string[]>(mockRFQCompanies);
+  const [selectedCompany, setSelectedCompany] = useState<string>(mockRFQCompanies[0]);
+
+  useEffect(() => {
+    const fetchUserAccess = async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.userAccess);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setUserAccessOrgs(data);
+            const orgNames = data.map((item: any) => item.orgname || item.orgid).filter(Boolean);
+            if (orgNames.length > 0) {
+              setCompaniesList(orgNames);
+              setSelectedCompany(orgNames[0]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch user access organizations:', err);
+      }
+    };
+    fetchUserAccess();
+  }, []);
 
   // Modals state
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
@@ -246,7 +269,7 @@ export const RFQPage: React.FC = () => {
         <RFQLandingHome
           selectedCompany={selectedCompany}
           onSelectCompany={setSelectedCompany}
-          companies={mockRFQCompanies}
+          companies={companiesList}
           onCreateNewRFQ={() => {
             setCurrentStep(1);
             setSubmissionResult(null);
@@ -281,6 +304,8 @@ export const RFQPage: React.FC = () => {
           <RFQSpecificationStep
             selectedItems={selectedItems}
             onUpdateSpecifications={handleUpdateSpecifications}
+            selectedCompany={selectedCompany}
+            userAccessOrgs={userAccessOrgs}
           />
         )}
 

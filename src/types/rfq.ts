@@ -2,7 +2,7 @@ export interface ItemSpecification {
   id: string;
   key: string;
   value: string;
-  source: 'item-master' | 'ai-suggested' | 'custom';
+  source: 'item-master' | 'ai-suggested' | 'custom' | 'api';
   category?: string;
   specGroup?: 'product' | 'commercial';
   rationale?: string;
