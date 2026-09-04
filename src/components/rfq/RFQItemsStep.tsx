@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useMemo } from 'react';
+import { API_ENDPOINTS } from '../../config/api';
 import type { CatalogItem, RFQItemSelection } from '../../types/rfq';
-import { mockCatalogItems } from '../../data/rfqMockData';
+
 import {
   Package,
   Plus,
@@ -35,18 +36,44 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetch(API_ENDPOINTS.items)
+      .then(res => res.json())
+      .then(data => {
+        const itemsArray = Array.isArray(data) ? data : (data.Items || []);
+        const mappedItems: CatalogItem[] = itemsArray.map((apiItem: any) => ({
+          id: apiItem.itemid,
+          name: apiItem.itemname || apiItem.itemid,
+          model: '',
+          category: apiItem.itemgroup || 'Uncategorized',
+          unit: apiItem.unit || 'Nos',
+          defaultQuantity: 1,
+          baseSpecs: [],
+          aiSuggestions: []
+        }));
+        setCatalogItems(mappedItems);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch items:', err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    mockCatalogItems.forEach((item) => set.add(item.category));
+    catalogItems.forEach((item) => set.add(item.category));
     return ['ALL', ...Array.from(set)];
-  }, []);
+  }, [catalogItems]);
 
   const filteredCatalog = useMemo(() => {
-    return mockCatalogItems.filter((item) => {
+    return catalogItems.filter((item) => {
       const matchesSearch =
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCat =
@@ -54,7 +81,7 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
 
       return matchesSearch && matchesCat;
     });
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, catalogItems]);
 
   const isItemSelected = (itemId: string) => {
     return selectedItems.some((sel) => sel.item.id === itemId);
@@ -157,26 +184,11 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
                     <div className="rfq-catalog-card__details">
                       <div className="rfq-catalog-card__meta-top">
                         <span className="rfq-catalog-card__model">
-                          Model: {item.model}
+                          ID: {item.id}
                         </span>
-                        <span className="rfq-catalog-card__category">
-                          {item.category}
-                        </span>
-                        {item.badge && (
-                          <span className="rfq-catalog-card__badge">
-                            {item.badge}
-                          </span>
-                        )}
                       </div>
 
                       <h4 className="rfq-catalog-card__name">{item.name}</h4>
-
-                      <div className="rfq-catalog-card__specs-hint">
-                        <Cpu size={13} className="rfq-icon-indigo" />
-                        <span>
-                          <strong>{item.baseSpecs.length} baseline specs</strong> available in Item Master
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -203,7 +215,11 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
               );
             })}
 
-            {filteredCatalog.length === 0 && (
+            {isLoading ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                Loading items from backend...
+              </div>
+            ) : filteredCatalog.length === 0 ? (
               <div className="rfq-empty-catalog">
                 <SlidersHorizontal size={24} />
                 <p>No catalog items match your search criteria.</p>
@@ -215,7 +231,7 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
                   + Add new item through Item Master
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -252,10 +268,7 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
                     <div className="rfq-selected-card__info">
                       <div className="rfq-selected-card__model-row">
                         <span className="rfq-selected-card__model">
-                          {sel.item.model}
-                        </span>
-                        <span className="rfq-selected-card__cat">
-                          {sel.item.category}
+                          ID: {sel.item.id}
                         </span>
                       </div>
                       <h4 className="rfq-selected-card__title">
@@ -274,10 +287,6 @@ export const RFQItemsStep: React.FC<RFQItemsStepProps> = ({
                   </div>
 
                   <div className="rfq-selected-card__bottom">
-                    <div className="rfq-selected-card__specs-count">
-                      <Layers size={13} />
-                      <span>{sel.item.baseSpecs.length} Baseline Specs</span>
-                    </div>
 
                     <div className="rfq-qty-control">
                       <label className="rfq-qty-label">Quantity:</label>

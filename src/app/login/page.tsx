@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 import { Mail, ArrowRight, ShieldCheck, Sparkles, Lock } from 'lucide-react';
 
 export default function LoginPage() {
@@ -95,9 +96,11 @@ export default function LoginPage() {
           </form>
 
           {/* Quick Demo Hint */}
-          <div className="auth-demo-hint">
-            <Lock size={13} className="auth-hint-icon" />
-            <span>Enterprise SSO enabled for all verified corporate domains.</span>
+          <div className="auth-demo-hint" style={{ marginTop: '1rem', justifyContent: 'center' }}>
+            <span style={{ color: 'var(--text-tertiary)' }}>Don't have an account? </span>
+            <Link href="/signup" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500, marginLeft: '0.5rem' }}>
+              Sign up
+            </Link>
           </div>
         </div>
 

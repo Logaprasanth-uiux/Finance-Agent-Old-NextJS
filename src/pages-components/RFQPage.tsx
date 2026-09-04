@@ -10,7 +10,7 @@ import type {
   RFQRecord,
   VendorQuotation,
 } from '../types/rfq';
-import { mockCatalogItems, mockVendors, mockRFQCompanies } from '../data/rfqMockData';
+import { mockRFQCompanies } from '../data/rfqMockData';
 import RFQLandingHome from '../components/rfq/RFQLandingHome';
 import RFQStepper, { type RFQStep } from '../components/rfq/RFQStepper';
 import RFQItemsStep from '../components/rfq/RFQItemsStep';
@@ -131,7 +131,7 @@ export const RFQPage: React.FC = () => {
   };
 
   const handleSelectAllVendors = () => {
-    setSelectedVendors([...mockVendors]);
+    setSelectedVendors([]);
   };
 
   const handleClearAllVendors = () => {

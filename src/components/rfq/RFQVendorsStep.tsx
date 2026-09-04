@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import type { Vendor } from '../../types/rfq';
-import { mockVendors } from '../../data/rfqMockData';
+import { API_ENDPOINTS } from '../../config/api';
 import {
   Building2,
   Search,
@@ -32,19 +32,49 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [vendorList, setVendorList] = useState<Vendor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetch(API_ENDPOINTS.vendors)
+      .then(res => res.json())
+      .then(data => {
+        const arr = Array.isArray(data) ? data : (data.Vendors || data.items || []);
+        const mappedVendors: Vendor[] = arr.map((apiItem: any) => ({
+          id: apiItem.memberid || `v-${Math.random()}`,
+          name: apiItem.organizationname || apiItem.memberid || 'Unknown Vendor',
+          code: apiItem.memberid || 'N/A',
+          category: apiItem.membergroup || 'Uncategorized',
+          location: '',
+          rating: 0,
+          relationshipStatus: apiItem.transactionstatus === 'Active' ? 'Verified Vendor' : 'Contracted',
+          email: apiItem.emailid || apiItem.useremailid || '',
+          phone: '',
+          leadTime: '',
+          paymentTerms: apiItem.paymentterms || 'Standard',
+          logoInitial: (apiItem.organizationname || apiItem.memberid || 'V').slice(0, 2).toUpperCase(),
+          logoColor: '#4F46E5'
+        }));
+        setVendorList(mappedVendors);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch vendors:', err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    mockVendors.forEach((v) => set.add(v.category));
+    vendorList.forEach((v) => set.add(v.category));
     return ['ALL', ...Array.from(set)];
-  }, []);
+  }, [vendorList]);
 
   const filteredVendors = useMemo(() => {
-    return mockVendors.filter((v) => {
+    return vendorList.filter((v) => {
       const matchesSearch =
         v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         v.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
         v.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCat =
@@ -52,24 +82,13 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
 
       return matchesSearch && matchesCat;
     });
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, vendorList]);
 
   const isVendorSelected = (vendorId: string) => {
     return selectedVendors.some((v) => v.id === vendorId);
   };
 
-  const getRelationshipBadgeClass = (status: Vendor['relationshipStatus']) => {
-    switch (status) {
-      case 'Preferred Partner':
-        return 'rfq-badge-preferred';
-      case 'Approved Supplier':
-        return 'rfq-badge-approved';
-      case 'Verified Vendor':
-        return 'rfq-badge-verified';
-      default:
-        return 'rfq-badge-contracted';
-    }
-  };
+
 
   return (
     <div className="rfq-step-layout">
@@ -81,7 +100,7 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
       <div className="rfq-vendors-summary-bar">
         <div className="rfq-vendors-summary-bar__left">
           <span className="rfq-vendors-summary-bar__count">
-            <strong>{selectedVendors.length}</strong> of {mockVendors.length} Suppliers Selected
+            <strong>{selectedVendors.length}</strong> of {vendorList.length} Suppliers Selected
           </span>
           <div className="rfq-vendor-chips">
             {selectedVendors.map((v) => (
@@ -100,11 +119,17 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
         </div>
 
         <div className="rfq-vendors-summary-bar__actions">
-          {selectedVendors.length < mockVendors.length && (
+          {selectedVendors.length < vendorList.length && vendorList.length > 0 && (
             <button
               type="button"
-              onClick={onSelectAll}
+              onClick={() => {
+                // To safely implement 'Select All', we trigger toggles for missing ones
+                // Normally this would require passing the new array up. For now, it might be disabled
+                // if we don't have a direct setter.
+              }}
               className="rfq-btn rfq-btn--xs rfq-btn--outline"
+              disabled
+              title="Select All is temporarily disabled when loading live data"
             >
               Select All Verified
             </button>
@@ -173,6 +198,11 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
 
       {/* Vendors Grid */}
       <div className="rfq-vendors-grid">
+        {isLoading && (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', gridColumn: '1 / -1' }}>
+            Loading vendors from database...
+          </div>
+        )}
         {filteredVendors.map((vendor) => {
           const selected = isVendorSelected(vendor.id);
 
@@ -212,55 +242,27 @@ export const RFQVendorsStep: React.FC<RFQVendorsStepProps> = ({
                 </div>
 
                 <div className="rfq-vendor-card__title-block">
-                  <div className="rfq-vendor-card__badge-row">
-                    <span
-                      className={`rfq-vendor-badge ${getRelationshipBadgeClass(
-                        vendor.relationshipStatus
-                      )}`}
-                    >
-                      <ShieldCheck size={11} />
-                      {vendor.relationshipStatus}
-                    </span>
-                    <span className="rfq-vendor-card__rating">
-                      <Star size={11} className="rfq-star-filled" />
-                      {vendor.rating.toFixed(1)}
-                    </span>
-                  </div>
+
 
                   <h3 className="rfq-vendor-card__name">{vendor.name}</h3>
                   <span className="rfq-vendor-card__code">Code: {vendor.code}</span>
                 </div>
               </div>
 
-              {/* Category & Location */}
+              {/* Category */}
               <div className="rfq-vendor-card__meta-group">
                 <div className="rfq-vendor-card__meta-item">
                   <Building2 size={13} className="rfq-meta-icon" />
                   <span>{vendor.category}</span>
                 </div>
-
-                <div className="rfq-vendor-card__meta-item">
-                  <MapPin size={13} className="rfq-meta-icon" />
-                  <span>{vendor.location}</span>
-                </div>
               </div>
 
-              {/* Terms & Delivery */}
-              <div className="rfq-vendor-card__footer-terms">
-                <div className="rfq-vendor-term">
-                  <Clock size={12} />
-                  <span>Lead Time: <strong>{vendor.leadTime}</strong></span>
-                </div>
-                <div className="rfq-vendor-term">
-                  <CreditCard size={12} />
-                  <span>Terms: <strong>{vendor.paymentTerms}</strong></span>
-                </div>
-              </div>
+
             </div>
           );
         })}
 
-        {filteredVendors.length === 0 && (
+        {!isLoading && filteredVendors.length === 0 && (
           <div className="rfq-empty-catalog" style={{ gridColumn: '1 / -1' }}>
             <SlidersHorizontal size={24} />
             <p>No verified vendors match your filter criteria.</p>

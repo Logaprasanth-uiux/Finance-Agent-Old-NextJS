@@ -4,6 +4,7 @@ export interface ItemSpecification {
   value: string;
   source: 'item-master' | 'ai-suggested' | 'custom';
   category?: string;
+  specGroup?: 'product' | 'commercial';
   rationale?: string;
   isAccepted?: boolean;
 }
