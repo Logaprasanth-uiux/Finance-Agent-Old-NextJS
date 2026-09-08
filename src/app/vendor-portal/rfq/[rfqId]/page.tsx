@@ -24,11 +24,18 @@ import {
   Send,
   Check,
   ShieldCheck,
-  FileCheck,
-  FileSpreadsheet
+  FileCheck
 } from 'lucide-react';
 
 const CURRENT_VENDOR_NAME = 'Acme Global';
+
+const GST_RATE_OPTIONS = [
+  { label: '0% (Exempt)', value: 0 },
+  { label: '5% GST', value: 0.05 },
+  { label: '12% GST', value: 0.12 },
+  { label: '18% GST', value: 0.18 },
+  { label: '28% GST', value: 0.28 },
+];
 
 interface PageProps {
   params: Promise<{ rfqId: string }>;
@@ -67,26 +74,23 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
     hasAlreadySubmitted ? 'submitted' : 'entry'
   );
 
-  // Fallback itemsDetail if not present in mock record
+  // Fallback itemsDetail ensuring full multi-item experience for all RFQs
   const itemsDetail = useMemo(() => {
     if (rfq?.itemsDetail && rfq.itemsDetail.length > 0) {
       return rfq.itemsDetail;
     }
-    return [
-      {
-        item: mockCatalogItems[0],
-        quantity: rfq?.totalQuantity || 10,
-        specifications: [...mockCatalogItems[0].baseSpecs],
-        aiEnriched: false,
-      },
-    ];
+    // Rich fallback from mock catalog items
+    return mockCatalogItems.map((item, idx) => ({
+      item,
+      quantity: [10, 20, 15, 25, 12, 20, 4, 3][idx] || 10,
+      specifications: [...item.baseSpecs],
+      aiEnriched: idx % 2 === 0,
+    }));
   }, [rfq]);
 
   // 3. Form States for Quotation Response
   // Unit prices: Record<itemId, number>
-  // Initial demo data showcases completed, incomplete, and not-started items
   const [unitPrices, setUnitPrices] = useState<Record<string, number>>(() => {
-    // Check if quote was previously persisted
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(`vp_quote_${rfqId}`);
@@ -118,6 +122,15 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
     return init;
   });
 
+  // Per-item GST Rates: Record<itemId, number> (e.g. 0, 0.05, 0.12, 0.18, 0.28)
+  const [gstRates, setGstRates] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    itemsDetail.forEach((itemSel) => {
+      init[itemSel.item.id] = 0.18; // Default 18% GST per item
+    });
+    return init;
+  });
+
   // Vendor Quoted Specs: Record<itemId, Record<specId, { vendorValue: string; note: string }>>
   const [vendorSpecs, setVendorSpecs] = useState<
     Record<string, Record<string, { vendorValue: string; note: string }>>
@@ -130,11 +143,9 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
         let note = '';
 
         if (idx === 2 && specIdx === 0) {
-          // Item 3 (Dell Latitude): Vendor quotes higher spec processor
           vendorValue = 'Intel Core Ultra 7 165H (vPro Enterprise)';
           note = 'Upgraded to high-performance 165H enterprise variant with integrated AI Boost.';
         } else if (idx === 3 && specIdx === 2) {
-          // Item 4 (Logitech Combo): Incomplete note added
           note = 'Includes Logi Bolt enterprise encrypted USB receivers in each combo pack.';
         }
 
@@ -161,7 +172,6 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
   const [vendorComments, setVendorComments] = useState(
     'Includes comprehensive 3-year on-site OEM warranty. Consolidated delivery to facility with transit insurance.'
   );
-  const [taxRate, setTaxRate] = useState(0.18); // 18% GST
 
   // Submission metadata state
   const [submittedQuoteMeta, setSubmittedQuoteMeta] = useState<{
@@ -173,7 +183,24 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check localStorage / mock data for persisted client submission on load
+  // Set of item IDs currently in review inline-edit mode
+  const [editingReviewItems, setEditingReviewItems] = useState<Set<string>>(new Set());
+  // Commercial terms inline-edit mode in Review
+  const [isEditingReviewTerms, setIsEditingReviewTerms] = useState(false);
+
+  const toggleEditReviewItem = (itemId: string) => {
+    setEditingReviewItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  };
+
+  // Check localStorage for persisted client submission on load
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -281,7 +308,6 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
     if (itemsDetail.length === 1) {
       init.add(itemsDetail[0].item.id);
     } else if (itemsDetail.length > 1) {
-      // Default expand item 4 (index 3) which is incomplete
       const targetItem = itemsDetail[3] || itemsDetail[0];
       init.add(targetItem.item.id);
     }
@@ -326,23 +352,31 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
     return itemStatusList;
   }, [itemStatusList, itemFilter]);
 
-  // Financial calculations
-  const subtotal = useMemo(() => {
-    return itemsDetail.reduce((acc, itemSel) => {
+  // Aggregated Financial calculations from individual items (Per-Item GST)
+  const financialTotals = useMemo(() => {
+    let subtotal = 0;
+    let totalGstAmount = 0;
+
+    itemsDetail.forEach((itemSel) => {
       const price = unitPrices[itemSel.item.id] || 0;
-      return acc + price * itemSel.quantity;
-    }, 0);
-  }, [itemsDetail, unitPrices]);
+      const rate = gstRates[itemSel.item.id] ?? 0.18;
+      const taxableAmount = price * itemSel.quantity;
+      const itemGst = Math.round(taxableAmount * rate);
 
-  const taxAmount = useMemo(() => {
-    return Math.round(subtotal * taxRate);
-  }, [subtotal, taxRate]);
+      subtotal += taxableAmount;
+      totalGstAmount += itemGst;
+    });
 
-  const totalAmount = useMemo(() => {
-    return subtotal + taxAmount;
-  }, [subtotal, taxAmount]);
+    const totalAmount = subtotal + totalGstAmount;
 
-  // Submit Handler: Persists VendorQuotation to mockCompanyRFQs and localStorage
+    return {
+      subtotal,
+      totalGstAmount,
+      totalAmount,
+    };
+  }, [itemsDetail, unitPrices, gstRates]);
+
+  // Submit Handler: Persists VendorQuotation with per-item GST
   const handleFinalSubmit = () => {
     setIsSubmitting(true);
 
@@ -359,26 +393,34 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
         minute: '2-digit',
       });
 
-      // Construct standard VendorQuotation
+      // Construct standard VendorQuotation with itemized GST breakdown
       const newQuotation: VendorQuotation = {
         quotationNumber: generatedQuoteNum,
         vendorId: 'v-1',
         vendorName: CURRENT_VENDOR_NAME,
         submittedDate: dateStr,
         submittedTime: timeStr,
-        quotedItems: itemsDetail.map((itemSel) => ({
-          itemId: itemSel.item.id,
-          itemName: itemSel.item.name,
-          model: itemSel.item.model,
-          quantity: itemSel.quantity,
-          unit: itemSel.item.unit,
-          unitPrice: unitPrices[itemSel.item.id] || 0,
-          lineTotal: (unitPrices[itemSel.item.id] || 0) * itemSel.quantity,
-        })),
-        subtotal: subtotal,
-        taxRate: taxRate,
-        taxAmount: taxAmount,
-        totalAmount: totalAmount,
+        quotedItems: itemsDetail.map((itemSel) => {
+          const uPrice = unitPrices[itemSel.item.id] || 0;
+          const gRate = gstRates[itemSel.item.id] ?? 0.18;
+          const taxable = uPrice * itemSel.quantity;
+          const gAmount = Math.round(taxable * gRate);
+          const totalWithTax = taxable + gAmount;
+
+          return {
+            itemId: itemSel.item.id,
+            itemName: itemSel.item.name,
+            model: itemSel.item.model,
+            quantity: itemSel.quantity,
+            unit: itemSel.item.unit,
+            unitPrice: uPrice,
+            lineTotal: totalWithTax,
+          };
+        }),
+        subtotal: financialTotals.subtotal,
+        taxRate: 0.18, // Aggregate baseline
+        taxAmount: financialTotals.totalGstAmount,
+        totalAmount: financialTotals.totalAmount,
         deliveryTimeline: deliveryTimeline,
         paymentTerms: paymentTerms,
         validityDate: validityDate,
@@ -399,7 +441,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
             vendorId: 'v-1',
             vendorName: CURRENT_VENDOR_NAME,
             status: 'Quotation Received',
-            quotationValue: totalAmount,
+            quotationValue: financialTotals.totalAmount,
             submittedDate: dateStr,
             submittedTime: timeStr,
             quotation: newQuotation,
@@ -417,7 +459,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
         quotationNumber: generatedQuoteNum,
         submittedDate: dateStr,
         submittedTime: timeStr,
-        totalAmount: totalAmount,
+        totalAmount: financialTotals.totalAmount,
       };
 
       if (typeof window !== 'undefined') {
@@ -452,7 +494,6 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
     );
   }
 
-  // Determine status badge presentation
   const isClosed = rfq.status === 'Closed';
   const isApproved = existingVendorResponse?.status === 'Quotation Approved';
   const isSubmittedState = viewMode === 'submitted';
@@ -556,7 +597,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                   <span>Delivery Location</span>
                 </span>
                 <span className="vp-detail-meta-value">
-                  {rfq.deliveryLocation || 'DataTwin Bangalore Tech Park — Logistics Hub'}
+                  {rfq.deliveryLocation || 'Acme Logistics Facility — Tech Park Hub'}
                 </span>
               </div>
             </div>
@@ -625,8 +666,11 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               {filteredItems.map(({ item: itemSel, status }) => {
                 const itemIdx = itemsDetail.findIndex((i) => i.item.id === itemSel.item.id);
                 const isExpanded = expandedItems.has(itemSel.item.id);
-                const currentItemUnitPrice = unitPrices[itemSel.item.id] || 0;
-                const currentItemLineTotal = currentItemUnitPrice * itemSel.quantity;
+                const currentUnitPrice = unitPrices[itemSel.item.id] || 0;
+                const currentGstRate = gstRates[itemSel.item.id] ?? 0.18;
+                const taxableAmount = currentUnitPrice * itemSel.quantity;
+                const currentGstAmount = Math.round(taxableAmount * currentGstRate);
+                const currentLineTotal = taxableAmount + currentGstAmount;
 
                 let statusIcon = <Circle size={14} />;
                 let statusIconClass = 'vp-accordion-status-icon--not-started';
@@ -678,11 +722,11 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                       </div>
 
                       <div className="vp-accordion-header__right">
-                        {currentItemUnitPrice > 0 && (
+                        {currentUnitPrice > 0 && (
                           <div className="vp-accordion-pricing-preview">
-                            <span className="vp-accordion-pricing-label">Line Total</span>
+                            <span className="vp-accordion-pricing-label">Total (Incl. GST)</span>
                             <span className="vp-accordion-pricing-val">
-                              ₹{currentItemLineTotal.toLocaleString('en-IN')}
+                              ₹{currentLineTotal.toLocaleString('en-IN')}
                             </span>
                           </div>
                         )}
@@ -834,7 +878,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                           </table>
                         </div>
 
-                        {/* Pricing Inputs */}
+                        {/* Per-Item Pricing & Independent GST Selection */}
                         <div className="vp-pricing-box">
                           <div className="vp-pricing-field">
                             <span className="vp-pricing-field__label">
@@ -844,7 +888,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                               <span style={{ color: '#64748B', fontWeight: 600 }}>₹</span>
                               <input
                                 type="number"
-                                value={currentItemUnitPrice || ''}
+                                value={currentUnitPrice || ''}
                                 onChange={(e) =>
                                   setUnitPrices((prev) => ({
                                     ...prev,
@@ -857,12 +901,43 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                             </div>
                           </div>
 
+                          <div className="vp-pricing-field">
+                            <span className="vp-pricing-field__label">
+                              GST Rate
+                            </span>
+                            <select
+                              value={currentGstRate}
+                              onChange={(e) =>
+                                setGstRates((prev) => ({
+                                  ...prev,
+                                  [itemSel.item.id]: Number(e.target.value),
+                                }))
+                              }
+                              className="vp-pricing-select"
+                            >
+                              {GST_RATE_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="vp-pricing-field">
+                            <span className="vp-pricing-field__label">
+                              GST Amount
+                            </span>
+                            <span className="vp-pricing-calc-value">
+                              ₹{currentGstAmount.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+
                           <div className="vp-line-total-box">
                             <span className="vp-line-total-label">
-                              Line Total ({itemSel.quantity} {itemSel.item.unit})
+                              Line Total ({itemSel.quantity} {itemSel.item.unit} Incl. GST)
                             </span>
                             <span className="vp-line-total-value">
-                              ₹{currentItemLineTotal.toLocaleString('en-IN')}
+                              ₹{currentLineTotal.toLocaleString('en-IN')}
                             </span>
                           </div>
                         </div>
@@ -918,7 +993,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               </div>
 
               <div className="vp-form-group">
-                <label className="vp-form-label">General Remarks &amp; Vendor Comments</label>
+                <label className="vp-form-label">Warranty &amp; General Remarks</label>
                 <textarea
                   value={vendorComments}
                   onChange={(e) => setVendorComments(e.target.value)}
@@ -928,6 +1003,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               </div>
             </div>
 
+            {/* Aggregated Financial Breakdown Card */}
             <div className="vp-card-section">
               <h3 className="vp-card-section__title">
                 <CreditCard size={18} color="#4F46E5" />
@@ -937,27 +1013,12 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               <div className="vp-financial-rows">
                 <div className="vp-financial-row">
                   <span>Subtotal (Excl. Taxes):</span>
-                  <strong>₹{subtotal.toLocaleString('en-IN')}</strong>
+                  <strong>₹{financialTotals.subtotal.toLocaleString('en-IN')}</strong>
                 </div>
 
                 <div className="vp-financial-row">
-                  <span>GST / Tax Rate:</span>
-                  <select
-                    value={taxRate}
-                    onChange={(e) => setTaxRate(Number(e.target.value))}
-                    className="vp-form-select"
-                    style={{ width: '120px', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                  >
-                    <option value={0.18}>18% GST</option>
-                    <option value={0.12}>12% GST</option>
-                    <option value={0.05}>5% GST</option>
-                    <option value={0}>0% Tax Exempt</option>
-                  </select>
-                </div>
-
-                <div className="vp-financial-row">
-                  <span>Estimated Tax Amount:</span>
-                  <strong>₹{taxAmount.toLocaleString('en-IN')}</strong>
+                  <span>Total Estimated GST / Taxes:</span>
+                  <strong>₹{financialTotals.totalGstAmount.toLocaleString('en-IN')}</strong>
                 </div>
 
                 <div className="vp-financial-divider" />
@@ -965,7 +1026,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                 <div className="vp-financial-total-row">
                   <span>Total Quotation Value:</span>
                   <span className="vp-financial-total-amount">
-                    ₹{totalAmount.toLocaleString('en-IN')}
+                    ₹{financialTotals.totalAmount.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
@@ -994,6 +1055,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
       {/* ========================================================================= */}
       {/* 2. VIEW MODE: DEDICATED REVIEW STATE */}
       {/* ========================================================================= */}
+
       {viewMode === 'review' && (
         <div className="vp-detail-wrapper" style={{ padding: 0 }}>
           {/* Review Header Card */}
@@ -1005,21 +1067,9 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               </span>
               <h2 className="vp-review-title">Review Your Quotation Response</h2>
               <p className="vp-review-sub">
-                Please review all quoted specifications, unit prices, and commercial terms before submitting to {rfq.company || 'the buyer'}.
+                Please review all quoted specifications, per-item GST rates, unit prices, and commercial terms before submitting to {rfq.company || 'the buyer'}. You can make instant edits directly to any item or terms section below.
               </p>
             </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setViewMode('entry');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="vp-btn-secondary"
-            >
-              <Edit3 size={14} />
-              <span>Back to Edit</span>
-            </button>
           </div>
 
           {/* RFQ Summary Card */}
@@ -1043,117 +1093,427 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               <span>•</span>
               <span><strong>Items:</strong> {itemsDetail.length} ({rfq.totalQuantity} Units)</span>
               <span>•</span>
-              <span><strong>Delivery:</strong> {rfq.deliveryLocation || 'Bangalore Tech Park'}</span>
+              <span><strong>Delivery:</strong> {rfq.deliveryLocation || 'Bangalore Tech Park Hub'}</span>
             </div>
           </div>
 
-          {/* Review of Line Items & Specs */}
+          {/* Review of Line Items & Specs with Section-Level Edit/Save Actions */}
           {itemsDetail.map((itemSel, idx) => {
+            const isEditingThisItem = editingReviewItems.has(itemSel.item.id);
             const price = unitPrices[itemSel.item.id] || 0;
-            const lineTotal = price * itemSel.quantity;
+            const rate = gstRates[itemSel.item.id] ?? 0.18;
+            const taxable = price * itemSel.quantity;
+            const gstAmt = Math.round(taxable * rate);
+            const lineTotal = taxable + gstAmt;
 
             return (
-              <div key={itemSel.item.id || idx} className="vp-item-card">
-                <div className="vp-item-card__header">
+              <div
+                key={itemSel.item.id || idx}
+                className="vp-item-card"
+              >
+                <div
+                  className="vp-item-card__header"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '1rem',
+                  }}
+                >
                   <div>
                     <h3 className="vp-item-card__name">
                       {idx + 1}. {itemSel.item.name} ({itemSel.quantity} {itemSel.item.unit})
                     </h3>
                     <span style={{ fontSize: '0.82rem', color: '#64748B' }}>
-                      Model: <strong>{itemSel.item.model}</strong> · Quoted Unit Price: <strong>₹{price.toLocaleString('en-IN')}</strong> · Line Total: <strong style={{ color: '#4F46E5' }}>₹{lineTotal.toLocaleString('en-IN')}</strong>
+                      Model: <strong>{itemSel.item.model}</strong> · Unit Price: <strong>₹{price.toLocaleString('en-IN')}</strong> · GST: <strong>{rate * 100}% (₹{gstAmt.toLocaleString('en-IN')})</strong> · Line Total: <strong style={{ color: '#4F46E5' }}>₹{lineTotal.toLocaleString('en-IN')}</strong>
                     </span>
                   </div>
+
+                  {isEditingThisItem ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleEditReviewItem(itemSel.item.id)}
+                      className="vp-section-save-btn"
+                      title="Save changes for this item"
+                    >
+                      <Check size={14} />
+                      <span>Save</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleEditReviewItem(itemSel.item.id)}
+                      className="vp-section-edit-btn"
+                      title="Edit this item"
+                    >
+                      <Edit3 size={13} />
+                      <span>Edit</span>
+                    </button>
+                  )}
                 </div>
 
-                {/* Specs Review Table */}
-                <div className="vp-specs-table-container">
-                  <table className="vp-specs-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '25%' }}>Specification</th>
-                        <th style={{ width: '35%' }}>Buyer Requirement (Read-Only)</th>
-                        <th style={{ width: '40%' }}>Vendor Quoted Specification</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {itemSel.specifications.map((spec) => {
-                        const vSpec = vendorSpecs[itemSel.item.id]?.[spec.id] || {
-                          vendorValue: spec.value,
-                          note: '',
-                        };
-
-                        const isDifferent = vSpec.vendorValue !== spec.value;
-
-                        return (
-                          <tr key={spec.id}>
-                            <td className="vp-spec-key-col">{spec.key}</td>
-                            <td className="vp-spec-buyer-col">
-                              <span className="vp-buyer-spec-text">
-                                <Lock size={12} color="#94A3B8" />
-                                {spec.value}
-                              </span>
-                            </td>
-                            <td className="vp-spec-vendor-col">
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                <strong style={{ color: isDifferent ? '#4F46E5' : '#0F172A' }}>
-                                  {vSpec.vendorValue || spec.value}
-                                </strong>
-                                {isDifferent && (
-                                  <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 700, background: '#EEF2FF', padding: '0.1rem 0.45rem', borderRadius: '4px', border: '1px solid #C7D2FE' }}>
-                                    Vendor Alternate
-                                  </span>
-                                )}
-                              </div>
-                              {vSpec.note && (
-                                <div className="vp-spec-note-saved-pill" style={{ marginTop: '0.35rem' }}>
-                                  <span>Note: {vSpec.note}</span>
-                                </div>
-                              )}
-                            </td>
+                {isEditingThisItem ? (
+                  /* INLINE EDIT MODE FOR THIS ITEM */
+                  <>
+                    <div className="vp-specs-table-container">
+                      <table className="vp-specs-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '22%' }}>Specification</th>
+                            <th style={{ width: '33%' }}>Buyer Requirement (Read-Only)</th>
+                            <th style={{ width: '45%' }}>Vendor Quoted Specification &amp; Note</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                        </thead>
+                        <tbody>
+                          {itemSel.specifications.map((spec) => {
+                            const currentVendorSpec =
+                              vendorSpecs[itemSel.item.id]?.[spec.id] || {
+                                vendorValue: spec.value,
+                                note: '',
+                              };
+
+                            const isNoteOpen =
+                              activeNoteTarget?.itemId === itemSel.item.id &&
+                              activeNoteTarget?.specId === spec.id;
+
+                            const hasSavedNote = Boolean(currentVendorSpec.note);
+
+                            return (
+                              <tr key={spec.id}>
+                                <td className="vp-spec-key-col">
+                                  <span>{spec.key}</span>
+                                </td>
+
+                                <td className="vp-spec-buyer-col">
+                                  <span className="vp-buyer-spec-text">
+                                    <Lock size={12} color="#94A3B8" />
+                                    {spec.value}
+                                  </span>
+                                </td>
+
+                                <td className="vp-spec-vendor-col">
+                                  <div className="vp-vendor-spec-input-wrapper">
+                                    <input
+                                      type="text"
+                                      value={currentVendorSpec.vendorValue}
+                                      onChange={(e) =>
+                                        handleSpecChange(
+                                          itemSel.item.id,
+                                          spec.id,
+                                          e.target.value
+                                        )
+                                      }
+                                      className="vp-vendor-spec-input"
+                                      placeholder="Enter vendor quoted spec..."
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenNoteEditor(itemSel.item.id, spec.id);
+                                      }}
+                                      className={`vp-spec-note-btn ${
+                                        hasSavedNote ? 'vp-spec-note-btn--has-note' : ''
+                                      }`}
+                                      title={hasSavedNote ? 'Edit note' : 'Add specification note/justification'}
+                                    >
+                                      <MessageSquare size={14} />
+                                    </button>
+                                  </div>
+
+                                  {hasSavedNote && (
+                                    <div className="vp-spec-note-saved-pill">
+                                      <span>Note: {currentVendorSpec.note}</span>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleOpenNoteEditor(itemSel.item.id, spec.id);
+                                        }}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                                        title="Edit Note"
+                                      >
+                                        <Edit3 size={11} color="#166534" />
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  {isNoteOpen && (
+                                    <div
+                                      className="vp-spec-note-popover"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#4F46E5' }}>
+                                        Add Note for &ldquo;{spec.key}&rdquo;
+                                      </span>
+                                      <textarea
+                                        value={noteDraft}
+                                        onChange={(e) => setNoteDraft(e.target.value)}
+                                        placeholder="e.g. Quoting higher tier alternate..."
+                                        className="vp-spec-note-textarea"
+                                        autoFocus
+                                      />
+                                      <div className="vp-spec-note-actions">
+                                        <button
+                                          type="button"
+                                          onClick={() => setActiveNoteTarget(null)}
+                                          className="vp-btn-secondary"
+                                          style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem' }}
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={handleSaveNote}
+                                          className="vp-btn-primary-action"
+                                          style={{ padding: '0.25rem 0.65rem', fontSize: '0.75rem' }}
+                                        >
+                                          Save Note
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Per-Item Pricing & GST Selection In Review */}
+                    <div className="vp-pricing-box">
+                      <div className="vp-pricing-field">
+                        <span className="vp-pricing-field__label">
+                          Quoted Unit Price (INR)
+                        </span>
+                        <div className="vp-pricing-input-wrap">
+                          <span style={{ color: '#64748B', fontWeight: 600 }}>₹</span>
+                          <input
+                            type="number"
+                            value={price || ''}
+                            onChange={(e) =>
+                              setUnitPrices((prev) => ({
+                                ...prev,
+                                [itemSel.item.id]: Number(e.target.value) || 0,
+                              }))
+                            }
+                            placeholder="0"
+                            className="vp-pricing-input"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="vp-pricing-field">
+                        <span className="vp-pricing-field__label">
+                          GST Rate
+                        </span>
+                        <select
+                          value={rate}
+                          onChange={(e) =>
+                            setGstRates((prev) => ({
+                              ...prev,
+                              [itemSel.item.id]: Number(e.target.value),
+                            }))
+                          }
+                          className="vp-pricing-select"
+                        >
+                          {GST_RATE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="vp-pricing-field">
+                        <span className="vp-pricing-field__label">
+                          GST Amount
+                        </span>
+                        <span className="vp-pricing-calc-value">
+                          ₹{gstAmt.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <div className="vp-line-total-box">
+                        <span className="vp-line-total-label">
+                          Line Total ({itemSel.quantity} {itemSel.item.unit} Incl. GST)
+                        </span>
+                        <span className="vp-line-total-value">
+                          ₹{lineTotal.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* READ-ONLY SUMMARY FOR THIS ITEM IN REVIEW */
+                  <div className="vp-specs-table-container">
+                    <table className="vp-specs-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '25%' }}>Specification</th>
+                          <th style={{ width: '35%' }}>Buyer Requirement (Read-Only)</th>
+                          <th style={{ width: '40%' }}>Vendor Quoted Specification</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {itemSel.specifications.map((spec) => {
+                          const vSpec = vendorSpecs[itemSel.item.id]?.[spec.id] || {
+                            vendorValue: spec.value,
+                            note: '',
+                          };
+
+                          const isDifferent = vSpec.vendorValue !== spec.value;
+
+                          return (
+                            <tr key={spec.id}>
+                              <td className="vp-spec-key-col">{spec.key}</td>
+                              <td className="vp-spec-buyer-col">
+                                <span className="vp-buyer-spec-text">
+                                  <Lock size={12} color="#94A3B8" />
+                                  {spec.value}
+                                </span>
+                              </td>
+                              <td className="vp-spec-vendor-col">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                  <strong style={{ color: isDifferent ? '#4F46E5' : '#0F172A' }}>
+                                    {vSpec.vendorValue || spec.value}
+                                  </strong>
+                                  {isDifferent && (
+                                    <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 700, background: '#EEF2FF', padding: '0.1rem 0.45rem', borderRadius: '4px', border: '1px solid #C7D2FE' }}>
+                                      Vendor Alternate
+                                    </span>
+                                  )}
+                                </div>
+                                {vSpec.note && (
+                                  <div className="vp-spec-note-saved-pill" style={{ marginTop: '0.35rem' }}>
+                                    <span>Note: {vSpec.note}</span>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             );
           })}
 
-          {/* Commercial & Financial Summary in Review */}
+          {/* Commercial & Financial Summary in Review with Section-Level Edit/Save Action */}
           <div className="vp-bottom-grid">
             <div className="vp-card-section">
-              <h3 className="vp-card-section__title">
-                <Truck size={17} color="#4F46E5" />
-                <span>Commercial Terms &amp; Conditions</span>
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.88rem' }}>
-                <div><span style={{ color: '#64748B' }}>Delivery Timeline:</span> <strong>{deliveryTimeline}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Payment Terms:</span> <strong>{paymentTerms}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Quotation Validity:</span> <strong>{validityDate}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Vendor Remarks:</span> <p style={{ marginTop: '0.2rem', color: '#334155', lineHeight: 1.5 }}>{vendorComments || 'None'}</p></div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem' }}>
+                <h3 className="vp-card-section__title" style={{ margin: 0 }}>
+                  <Truck size={17} color="#4F46E5" />
+                  <span>Commercial Terms &amp; Conditions</span>
+                </h3>
+                {isEditingReviewTerms ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingReviewTerms(false)}
+                    className="vp-section-save-btn"
+                    title="Save commercial terms"
+                  >
+                    <Check size={14} />
+                    <span>Save</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingReviewTerms(true)}
+                    className="vp-section-edit-btn"
+                    title="Edit commercial terms"
+                  >
+                    <Edit3 size={13} />
+                    <span>Edit</span>
+                  </button>
+                )}
               </div>
+
+
+              {isEditingReviewTerms ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="vp-form-grid-2">
+                    <div className="vp-form-group">
+                      <label className="vp-form-label">Delivery Timeline</label>
+                      <input
+                        type="text"
+                        value={deliveryTimeline}
+                        onChange={(e) => setDeliveryTimeline(e.target.value)}
+                        className="vp-form-input"
+                        placeholder="e.g. 14 Business Days"
+                      />
+                    </div>
+
+                    <div className="vp-form-group">
+                      <label className="vp-form-label">Payment Terms</label>
+                      <input
+                        type="text"
+                        value={paymentTerms}
+                        onChange={(e) => setPaymentTerms(e.target.value)}
+                        className="vp-form-input"
+                        placeholder="e.g. Net 30 Days"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="vp-form-group">
+                    <label className="vp-form-label">Quotation Validity</label>
+                    <input
+                      type="text"
+                      value={validityDate}
+                      onChange={(e) => setValidityDate(e.target.value)}
+                      className="vp-form-input"
+                      placeholder="e.g. 30 Days from submission"
+                    />
+                  </div>
+
+                  <div className="vp-form-group">
+                    <label className="vp-form-label">Warranty &amp; General Remarks</label>
+                    <textarea
+                      value={vendorComments}
+                      onChange={(e) => setVendorComments(e.target.value)}
+                      className="vp-form-textarea"
+                      placeholder="Include warranty details, transit insurance, or logistics terms..."
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.88rem' }}>
+                  <div><span style={{ color: '#64748B' }}>Delivery Timeline:</span> <strong>{deliveryTimeline}</strong></div>
+                  <div><span style={{ color: '#64748B' }}>Payment Terms:</span> <strong>{paymentTerms}</strong></div>
+                  <div><span style={{ color: '#64748B' }}>Quotation Validity:</span> <strong>{validityDate}</strong></div>
+                  <div>
+                    <span style={{ color: '#64748B' }}>Warranty &amp; General Remarks:</span>
+                    <p style={{ marginTop: '0.2rem', color: '#334155', lineHeight: 1.5 }}>{vendorComments || 'None'}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
+            {/* Read-Only Calculated Financial Breakdown */}
             <div className="vp-card-section">
               <h3 className="vp-card-section__title">
                 <CreditCard size={17} color="#4F46E5" />
-                <span>Financial Total</span>
+                <span>Financial Breakdown (Calculated)</span>
               </h3>
               <div className="vp-financial-rows">
                 <div className="vp-financial-row">
                   <span>Subtotal (Excl. Taxes):</span>
-                  <strong>₹{subtotal.toLocaleString('en-IN')}</strong>
+                  <strong>₹{financialTotals.subtotal.toLocaleString('en-IN')}</strong>
                 </div>
                 <div className="vp-financial-row">
-                  <span>GST Tax ({taxRate * 100}%):</span>
-                  <strong>₹{taxAmount.toLocaleString('en-IN')}</strong>
+                  <span>Total Estimated GST / Taxes:</span>
+                  <strong>₹{financialTotals.totalGstAmount.toLocaleString('en-IN')}</strong>
                 </div>
                 <div className="vp-financial-divider" />
                 <div className="vp-financial-total-row">
                   <span>Total Quotation Value:</span>
                   <span className="vp-financial-total-amount">
-                    ₹{totalAmount.toLocaleString('en-IN')}
+                    ₹{financialTotals.totalAmount.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
@@ -1162,17 +1522,9 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
 
           {/* Action Row */}
           <div className="vp-action-bar">
-            <button
-              type="button"
-              onClick={() => {
-                setViewMode('entry');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="vp-btn-secondary"
-            >
-              <ArrowLeft size={14} />
-              <span>Back to Edit</span>
-            </button>
+            <Link href="/vendor-portal/rfq" className="vp-btn-secondary">
+              Cancel
+            </Link>
 
             <button
               type="button"
@@ -1192,6 +1544,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
           </div>
         </div>
       )}
+
 
       {/* ========================================================================= */}
       {/* 3. VIEW MODE: SUBMITTED CONFIRMATION STATE (READ-ONLY) */}
@@ -1241,7 +1594,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               <div className="vp-submitted-grid-item">
                 <span className="vp-submitted-grid-label">Total Quotation Value</span>
                 <span className="vp-submitted-grid-value" style={{ color: '#059669' }}>
-                  ₹{(submittedQuoteMeta?.totalAmount || totalAmount).toLocaleString('en-IN')}
+                  ₹{(submittedQuoteMeta?.totalAmount || financialTotals.totalAmount).toLocaleString('en-IN')}
                 </span>
               </div>
             </div>
@@ -1250,7 +1603,10 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
           {/* Read-Only Items Breakdown */}
           {itemsDetail.map((itemSel, idx) => {
             const price = unitPrices[itemSel.item.id] || 0;
-            const lineTotal = price * itemSel.quantity;
+            const rate = gstRates[itemSel.item.id] ?? 0.18;
+            const taxable = price * itemSel.quantity;
+            const gstAmt = Math.round(taxable * rate);
+            const lineTotal = taxable + gstAmt;
 
             return (
               <div key={itemSel.item.id || idx} className="vp-item-card">
@@ -1260,7 +1616,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                       {idx + 1}. {itemSel.item.name} ({itemSel.quantity} {itemSel.item.unit})
                     </h3>
                     <span style={{ fontSize: '0.82rem', color: '#64748B' }}>
-                      Model: <strong>{itemSel.item.model}</strong> · Quoted Unit Price: <strong>₹{price.toLocaleString('en-IN')}</strong> · Line Total: <strong style={{ color: '#059669' }}>₹{lineTotal.toLocaleString('en-IN')}</strong>
+                      Model: <strong>{itemSel.item.model}</strong> · Unit Price: <strong>₹{price.toLocaleString('en-IN')}</strong> · GST: <strong>{rate * 100}% (₹{gstAmt.toLocaleString('en-IN')})</strong> · Line Total: <strong style={{ color: '#059669' }}>₹{lineTotal.toLocaleString('en-IN')}</strong>
                     </span>
                   </div>
                   <span className="vp-item-status-pill vp-item-status-pill--completed">
@@ -1331,7 +1687,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                 <div><span style={{ color: '#64748B' }}>Delivery Timeline:</span> <strong>{deliveryTimeline}</strong></div>
                 <div><span style={{ color: '#64748B' }}>Payment Terms:</span> <strong>{paymentTerms}</strong></div>
                 <div><span style={{ color: '#64748B' }}>Quotation Validity:</span> <strong>{validityDate}</strong></div>
-                <div><span style={{ color: '#64748B' }}>Vendor Remarks:</span> <p style={{ marginTop: '0.2rem', color: '#334155', lineHeight: 1.5 }}>{vendorComments || 'None'}</p></div>
+                <div><span style={{ color: '#64748B' }}>Warranty &amp; General Remarks:</span> <p style={{ marginTop: '0.2rem', color: '#334155', lineHeight: 1.5 }}>{vendorComments || 'None'}</p></div>
               </div>
             </div>
 
@@ -1343,17 +1699,17 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
               <div className="vp-financial-rows">
                 <div className="vp-financial-row">
                   <span>Subtotal (Excl. Taxes):</span>
-                  <strong>₹{subtotal.toLocaleString('en-IN')}</strong>
+                  <strong>₹{financialTotals.subtotal.toLocaleString('en-IN')}</strong>
                 </div>
                 <div className="vp-financial-row">
-                  <span>Tax ({taxRate * 100}% GST):</span>
-                  <strong>₹{taxAmount.toLocaleString('en-IN')}</strong>
+                  <span>Total Estimated GST / Taxes:</span>
+                  <strong>₹{financialTotals.totalGstAmount.toLocaleString('en-IN')}</strong>
                 </div>
                 <div className="vp-financial-divider" />
                 <div className="vp-financial-total-row">
                   <span>Total Quotation Amount:</span>
                   <span className="vp-financial-total-amount" style={{ color: '#059669' }}>
-                    ₹{(submittedQuoteMeta?.totalAmount || totalAmount).toLocaleString('en-IN')}
+                    ₹{(submittedQuoteMeta?.totalAmount || financialTotals.totalAmount).toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>

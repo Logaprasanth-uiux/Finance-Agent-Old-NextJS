@@ -276,6 +276,8 @@ export default function VendorPortalRFQPage() {
 
             <Link 
               href={`/vendor-portal/rfq/${rfq.id}`} 
+              target="_blank"
+              rel="noopener noreferrer"
               className="vp-btn-view-rfq"
               title={`View ${rfq.rfqNumber}`}
             >
