@@ -332,6 +332,126 @@ export const mockCatalogItems: CatalogItem[] = [
       },
     ],
   },
+  {
+    id: 'item-006',
+    name: 'Dell Thunderbolt 4 Enterprise Dock',
+    model: 'WD22TB4',
+    category: 'Peripherals / Docking Stations',
+    unit: 'Nos',
+    defaultQuantity: 20,
+    badge: 'Universal Multi-Display',
+    baseSpecs: [
+      {
+        id: 'spec-601',
+        key: 'Host Interface',
+        value: 'Thunderbolt 4 / USB-C with 130W Power Delivery to Dell systems (90W non-Dell)',
+        source: 'item-master',
+        category: 'Connectivity',
+      },
+      {
+        id: 'spec-602',
+        key: 'Display Support',
+        value: 'Up to Quad 4K @ 60Hz or Single 8K @ 30Hz via DP 1.4, HDMI 2.0 & TB4',
+        source: 'item-master',
+        category: 'Display & Graphics',
+      },
+      {
+        id: 'spec-603',
+        key: 'Network Port',
+        value: 'Gigabit Ethernet (RJ-45) with PXE Boot & MAC Address Pass-Through',
+        source: 'item-master',
+        category: 'Networking',
+      },
+      {
+        id: 'spec-604',
+        key: 'Warranty & Support',
+        value: '3-Year Advanced Exchange Service',
+        source: 'item-master',
+        category: 'Service & Support',
+      },
+    ],
+    aiSuggestions: [],
+  },
+  {
+    id: 'item-007',
+    name: 'Cisco Catalyst 9200L 48-Port PoE+ Switch',
+    model: 'C9200L-48P-4G-E',
+    category: 'Networking / Switches',
+    unit: 'Nos',
+    defaultQuantity: 4,
+    badge: 'Core Infrastructure',
+    baseSpecs: [
+      {
+        id: 'spec-701',
+        key: 'Port Configuration',
+        value: '48x 10/100/1000 Gigabit Ethernet PoE+ Ports (740W PoE Budget)',
+        source: 'item-master',
+        category: 'Network Ports',
+      },
+      {
+        id: 'spec-702',
+        key: 'Uplink Interfaces',
+        value: '4x 1G SFP Fixed Uplink Ports',
+        source: 'item-master',
+        category: 'Uplink & Fiber',
+      },
+      {
+        id: 'spec-703',
+        key: 'Layer 3 Features',
+        value: 'Network Essentials License (OSPF, RIP, PIM, Routed Access)',
+        source: 'item-master',
+        category: 'Software & Features',
+      },
+      {
+        id: 'spec-704',
+        key: 'Hardware Redundancy',
+        value: 'Dual Field-Replaceable Redundant Power Supply Support',
+        source: 'item-master',
+        category: 'Power & Reliability',
+      },
+    ],
+    aiSuggestions: [],
+  },
+  {
+    id: 'item-008',
+    name: 'Poly Studio X50 4K Video Bar & Touch Controller',
+    model: 'STUDIO-X50-TC8',
+    category: 'Collaboration / Conference Systems',
+    unit: 'Sets',
+    defaultQuantity: 3,
+    badge: 'Executive Boardroom',
+    baseSpecs: [
+      {
+        id: 'spec-801',
+        key: 'Camera & Optics',
+        value: '4K Ultra HD 120° FOV Camera with Auto Speaker Framing & Acoustic Fence',
+        source: 'item-master',
+        category: 'Video Specs',
+      },
+      {
+        id: 'spec-802',
+        key: 'Audio & Microphones',
+        value: 'Next-Gen Beamforming Mic Array (25ft reach) + Stereo Speakers',
+        source: 'item-master',
+        category: 'Audio Specs',
+      },
+      {
+        id: 'spec-803',
+        key: 'Platform Compatibility',
+        value: 'Native Zoom Rooms, Microsoft Teams Rooms & Google Meet certified',
+        source: 'item-master',
+        category: 'Software & Unified Comms',
+      },
+      {
+        id: 'spec-804',
+        key: 'Controller Interface',
+        value: 'Poly TC8 8" High-Resolution Touch Control Pad with PoE',
+        source: 'item-master',
+        category: 'Hardware Controller',
+      },
+    ],
+    aiSuggestions: [],
+  },
 ];
 
 export const mockVendors: Vendor[] = [
@@ -637,10 +757,10 @@ export const mockCompanyRFQs: Record<
         id: 'rfq-001',
         rfqNumber: 'RFQ-2026-0042',
         company: 'Acme Technologies Pvt Ltd',
-        title: 'HP Laptop Procurement — HP251 (Core i5 / 16GB)',
-        itemsSummary: 'HP Laptop HP251 (10 Nos)',
-        itemCount: 1,
-        totalQuantity: 10,
+        title: 'Enterprise IT Equipment & Workstation Infrastructure Refresh',
+        itemsSummary: 'HP Laptop HP251 (10 Nos), Samsung 27" 4K Monitor (20 Nos), Dell Latitude 5450 (15 Nos) & 5 more items (109 Units)',
+        itemCount: 8,
+        totalQuantity: 109,
         vendorCount: 4,
         vendors: ['TechCorp Solutions', 'Acme Global', 'Apex Retail', 'J.P. Morgan Chase & Co.'],
         createdDate: '26 Aug 2026',
@@ -648,16 +768,59 @@ export const mockCompanyRFQs: Record<
         timeRemaining: '2d 14h remaining',
         status: 'Awaiting Quotations',
         isLocked: true,
-        estimatedBudget: 1250000,
+        estimatedBudget: 6850000,
         quotesReceivedCount: 1,
         category: 'Computing & IT',
         deliveryLocation: 'DataTwin Bangalore Tech Park — Logistics Hub',
-        notes: 'Requirement requires pre-loaded OEM image and on-site hardware support.',
+        notes:
+          'Please include standard 3-year enterprise OEM warranty, GST breakout, volume discounting, and on-site hardware support in commercial quotation. Original specifications must be adhered to unless explicit alternatives are proposed.',
         itemsDetail: [
           {
-            item: mockCatalogItems[0],
+            item: mockCatalogItems[0], // HP Laptop HP251 (10 Nos)
             quantity: 10,
             specifications: [...mockCatalogItems[0].baseSpecs],
+            aiEnriched: true,
+          },
+          {
+            item: mockCatalogItems[1], // Samsung 27" 4K UHD Commercial Monitor (20 Nos)
+            quantity: 20,
+            specifications: [...mockCatalogItems[1].baseSpecs],
+            aiEnriched: true,
+          },
+          {
+            item: mockCatalogItems[2], // Dell Latitude 5450 Business Laptop (15 Nos)
+            quantity: 15,
+            specifications: [...mockCatalogItems[2].baseSpecs],
+            aiEnriched: true,
+          },
+          {
+            item: mockCatalogItems[3], // Logitech MX Keys Wireless Combo (25 Sets)
+            quantity: 25,
+            specifications: [...mockCatalogItems[3].baseSpecs],
+            aiEnriched: false,
+          },
+          {
+            item: mockCatalogItems[4], // Lenovo ThinkPad E14 Gen 5 (12 Nos)
+            quantity: 12,
+            specifications: [...mockCatalogItems[4].baseSpecs],
+            aiEnriched: false,
+          },
+          {
+            item: mockCatalogItems[5], // Dell Thunderbolt 4 Enterprise Dock WD22TB4 (20 Nos)
+            quantity: 20,
+            specifications: [...mockCatalogItems[5].baseSpecs],
+            aiEnriched: false,
+          },
+          {
+            item: mockCatalogItems[6], // Cisco Catalyst 9200L 48-Port PoE+ Switch (4 Nos)
+            quantity: 4,
+            specifications: [...mockCatalogItems[6].baseSpecs],
+            aiEnriched: false,
+          },
+          {
+            item: mockCatalogItems[7], // Poly Studio X50 4K Video Bar & Touch Controller (3 Sets)
+            quantity: 3,
+            specifications: [...mockCatalogItems[7].baseSpecs],
             aiEnriched: true,
           },
         ],
