@@ -11675,6 +11675,1229 @@ body {
   gap: 0.75rem;
 }
 
+/* ==========================================================================
+   Buyer RFQ — Comparative View Styles
+   ========================================================================== */
+
+.rfq-comparative-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: arFadeIn 0.25s ease-out;
+}
+
+/* 1. Header Card */
+.rfq-comparative-header-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.rfq-comparative-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.rfq-comparative-header-left {
+  flex: 1;
+  min-width: 320px;
+}
+
+.rfq-comparative-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4338CA;
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
+  padding: 0.15rem 0.6rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rfq-comparative-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary-text);
+  margin: 0.35rem 0 0.25rem 0;
+  letter-spacing: -0.01em;
+}
+
+.rfq-comparative-subtitle {
+  font-size: 0.85rem;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rfq-comparative-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+}
+
+.rfq-comp-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rfq-comp-meta-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rfq-comp-meta-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rfq-comp-meta-value--highlight {
+  color: #4F46E5;
+}
+
+.rfq-approval-success-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #ECFDF5;
+  border: 1px solid #6EE7B7;
+  color: #065F46;
+  padding: 0.85rem 1.15rem;
+  border-radius: 10px;
+  animation: arFadeIn 0.3s ease;
+}
+
+.rfq-approval-success-alert strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.15rem;
+}
+
+.rfq-approval-success-alert span {
+  font-size: 0.8rem;
+  color: #047857;
+}
+
+/* Quick KPI Strip */
+.rfq-comparative-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #F1F5F9;
+}
+
+.rfq-kpi-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rfq-kpi-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rfq-kpi-value-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.rfq-kpi-num {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.rfq-kpi-sub {
+  font-size: 0.72rem;
+  color: #64748B;
+  margin-top: 0.1rem;
+}
+
+/* 2. Control Bar */
+.rfq-comparative-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+}
+
+.rfq-comp-search-wrap {
+  position: relative;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.rfq-comp-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.rfq-comp-search-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 0.45rem 1.8rem 0.45rem 2.2rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  color: var(--primary-text);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.rfq-comp-search-input:focus {
+  background: #FFFFFF;
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.rfq-comp-search-clear {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.rfq-comp-category-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.2rem 0;
+  scrollbar-width: thin;
+  flex: 1;
+}
+
+.rfq-category-pill {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.rfq-category-pill:hover {
+  background: #F1F5F9;
+  color: #1E293B;
+}
+
+.rfq-category-pill--active {
+  background: #4F46E5;
+  border-color: #4F46E5;
+  color: #FFFFFF;
+}
+
+.rfq-category-pill--active:hover {
+  background: #4338CA;
+  color: #FFFFFF;
+}
+
+.rfq-comp-expand-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.rfq-btn--subtle {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rfq-btn--subtle:hover {
+  background: #E2E8F0;
+  color: #1E293B;
+}
+
+/* 3. Specification Matrix Table */
+.rfq-comparative-matrix-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.rfq-comparative-matrix-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #F1F5F9;
+  background: #FFFFFF;
+}
+
+.rfq-comp-section-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.rfq-comp-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.rfq-comp-section-sub {
+  font-size: 0.8rem;
+  color: #64748B;
+  margin: 0;
+}
+
+.rfq-comp-count-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4F46E5;
+  background: #EEF2FF;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.rfq-matrix-table-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.rfq-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.83rem;
+}
+
+.rfq-matrix-sticky-header th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #F8FAFC;
+  border-bottom: 2px solid #CBD5E1;
+  padding: 1rem;
+  vertical-align: top;
+}
+
+.rfq-th--feature {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #F1F5F9 !important;
+}
+
+.rfq-th--buyer-req {
+  background: #F8FAFC !important;
+  border-left: 2px solid #E2E8F0;
+  border-right: 2px solid #E2E8F0;
+}
+
+.rfq-th-buyer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rfq-buyer-col-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #059669;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.rfq-th--vendor {
+  border-left: 1px solid #E2E8F0;
+  background: #FFFFFF !important;
+  transition: all 0.15s ease;
+}
+
+.rfq-th--vendor-selected {
+  background: #F5F7FF !important;
+  border-top: 3px solid #4F46E5;
+}
+
+.rfq-th--vendor-approved {
+  background: #F0FDF4 !important;
+  border-top: 3px solid #10B981;
+}
+
+.rfq-vendor-col-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.rfq-vendor-col-header__top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rfq-vendor-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rfq-vendor-col-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.rfq-vendor-col-loc {
+  font-size: 0.7rem;
+  color: #64748B;
+}
+
+.rfq-vendor-col-header__pricing {
+  display: flex;
+  flex-direction: column;
+}
+
+.rfq-vendor-col-price {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.rfq-vendor-col-price-sub {
+  font-size: 0.7rem;
+  color: #64748B;
+}
+
+.rfq-approved-tag-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #065F46;
+  background: #D1FAE5;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Category Group Row */
+.rfq-matrix-group-row {
+  background: #F1F5F9;
+  cursor: pointer;
+  border-top: 1px solid #CBD5E1;
+  border-bottom: 1px solid #CBD5E1;
+  transition: background 0.15s ease;
+}
+
+.rfq-matrix-group-row:hover {
+  background: #E2E8F0;
+}
+
+.rfq-matrix-group-cell {
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rfq-matrix-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #1E293B;
+}
+
+.rfq-matrix-group-count {
+  font-size: 0.75rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.rfq-matrix-group-desc {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+/* Data Row */
+.rfq-matrix-data-row {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background 0.12s ease;
+}
+
+.rfq-matrix-data-row:hover {
+  background: #FAFBFD;
+}
+
+.rfq-matrix-data-row--has-note {
+  border-left: 3px solid #F59E0B;
+}
+
+.rfq-td {
+  padding: 0.85rem 1rem;
+  vertical-align: top;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.rfq-td--feature {
+  font-weight: 600;
+  color: #1E293B;
+  background: #FAFAFB;
+  border-right: 1px solid #E2E8F0;
+}
+
+.rfq-feature-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rfq-feature-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.rfq-feature-note-btn-wrap {
+  display: flex;
+}
+
+.rfq-note-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748B;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rfq-note-action-btn:hover {
+  background: #EEF2FF;
+  color: #4F46E5;
+  border-color: #C7D2FE;
+}
+
+.rfq-note-action-btn--active {
+  background: #FEF3C7;
+  color: #92400E;
+  border-color: #FDE68A;
+  font-weight: 700;
+}
+
+.rfq-td--buyer-req {
+  background: #F8FAFC;
+  color: #334155;
+  border-right: 2px solid #E2E8F0;
+  font-size: 0.8rem;
+}
+
+.rfq-buyer-req-content {
+  color: #475569;
+  font-style: normal;
+}
+
+.rfq-td--vendor-response {
+  border-left: 1px solid #F1F5F9;
+  color: #0F172A;
+}
+
+.rfq-td--vendor-response-selected {
+  background: #FAFBFF;
+}
+
+.rfq-vendor-response-text {
+  font-weight: 500;
+}
+
+/* Inline Note Row */
+.rfq-matrix-note-row {
+  background: #FFFDF5;
+  border-bottom: 1px dashed #FDE68A;
+}
+
+.rfq-matrix-note-container {
+  padding: 0.6rem 1rem 0.6rem 1.5rem;
+}
+
+.rfq-matrix-note-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rfq-note-display-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.rfq-note-pill-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #92400E;
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rfq-note-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #78350F;
+  font-style: italic;
+}
+
+.rfq-note-display-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.rfq-btn-icon-subtle {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.rfq-btn-icon-subtle:hover {
+  color: #1E293B;
+  background: #FEF3C7;
+}
+
+.rfq-btn-icon-subtle--danger:hover {
+  color: #DC2626;
+  background: #FEE2E2;
+}
+
+.rfq-matrix-note-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #FFFFFF;
+  border: 1px solid #FCD34D;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.rfq-note-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rfq-note-editor-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #92400E;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rfq-note-textarea {
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 0.5rem;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  resize: vertical;
+  outline: none;
+  color: var(--primary-text);
+}
+
+.rfq-note-textarea:focus {
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.rfq-note-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* 4. Commercial Comparison Section */
+.rfq-comparative-commercial-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.rfq-commercial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.rfq-commercial-table-wrap {
+  overflow-x: auto;
+}
+
+.rfq-commercial-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.rfq-commercial-table th {
+  background: #F8FAFC;
+  border-bottom: 2px solid #CBD5E1;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+.rfq-th-comm-selected {
+  background: #EEF2FF !important;
+  border-top: 3px solid #4F46E5;
+}
+
+.rfq-comm-th-vendor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rfq-comm-vendor-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.rfq-comm-qtn-num {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: #64748B;
+}
+
+.rfq-commercial-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: middle;
+}
+
+.rfq-comm-param-label {
+  color: #475569;
+  font-size: 0.82rem;
+}
+
+.rfq-comm-value {
+  color: #0F172A;
+  font-weight: 500;
+}
+
+.rfq-comm-total-row td {
+  background: #F8FAFC;
+  border-top: 2px solid #E2E8F0;
+  border-bottom: 2px solid #CBD5E1;
+}
+
+.rfq-comm-value--total {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.rfq-comm-total-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rfq-comm-total-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.rfq-lowest-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #065F46;
+  background: #D1FAE5;
+  border: 1px solid #6EE7B7;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.rfq-comm-flex-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rfq-comm-remarks-cell {
+  max-width: 260px;
+}
+
+.rfq-comm-remarks-text {
+  font-size: 0.78rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 5. Overall Remarks Card */
+.rfq-comparative-remarks-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.rfq-remarks-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary-text);
+  margin: 0 0 0.2rem 0;
+}
+
+.rfq-remarks-subtitle {
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+.rfq-overall-remarks-textarea {
+  font-family: inherit;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  padding: 0.75rem 1rem;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  outline: none;
+  color: var(--primary-text);
+  resize: vertical;
+  background: #F8FAFC;
+  transition: all 0.15s ease;
+}
+
+.rfq-overall-remarks-textarea:focus {
+  background: #FFFFFF;
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* 6. Vendor Selection & Bottom Approval Bar */
+.rfq-comparative-approval-bar {
+  background: #1E293B;
+  color: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+  position: sticky;
+  bottom: 1.25rem;
+  z-index: 20;
+}
+
+.rfq-approval-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.rfq-select-vendor-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rfq-select-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94A3B8;
+}
+
+.rfq-vendor-select-dropdown {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0F172A;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 0.5rem 2rem 0.5rem 0.85rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 320px;
+}
+
+.rfq-selected-vendor-quick-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.rfq-quick-pill {
+  font-size: 0.75rem;
+  color: #CBD5E1;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rfq-quick-pill strong {
+  color: #FFFFFF;
+}
+
+.rfq-btn--approve-vendor {
+  background: #10B981 !important;
+  border-color: #059669 !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rfq-btn--approve-vendor:hover {
+  background: #059669 !important;
+}
+
+/* 7. Comprehensive Approval Review Modal */
+.rfq-modal-card--comparative-review {
+  max-width: 780px;
+  width: 92vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.rfq-modal-body--scrollable {
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: calc(88vh - 140px);
+}
+
+.rfq-review-vendor-banner {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.rfq-review-vendor-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rfq-review-vendor-details {
+  flex: 1;
+}
+
+.rfq-review-vendor-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #4F46E5;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
+}
+
+.rfq-review-vendor-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.3rem 0;
+}
+
+.rfq-review-vendor-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.rfq-review-price-box {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.rfq-review-price-label {
+  font-size: 0.7rem;
+  color: #64748B;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.rfq-review-price-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #059669;
+}
+
+.rfq-review-price-sub {
+  font-size: 0.7rem;
+  color: #64748B;
+}
+
+.rfq-review-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.rfq-review-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rfq-review-commercial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.rfq-review-grid-item {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rfq-rev-label {
+  font-size: 0.7rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.rfq-rev-value {
+  font-size: 0.88rem;
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.rfq-review-warranty-box {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #166534;
+}
+
+.rfq-review-warranty-box p {
+  margin: 0.25rem 0 0 0;
+  color: #15803D;
+  font-size: 0.76rem;
+}
+
+.rfq-review-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+
+.rfq-rev-spec-pill {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rfq-rev-spec-pill strong {
+  font-size: 0.72rem;
+  color: #64748B;
+  text-transform: uppercase;
+}
+
+.rfq-rev-spec-pill span {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.rfq-review-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rfq-review-note-item {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.rfq-review-note-feature {
+  font-weight: 700;
+  color: #92400E;
+  white-space: nowrap;
+}
+
+.rfq-review-note-val {
+  color: #78350F;
+  font-style: italic;
+}
+
+.rfq-review-justification-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #4F46E5;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.rfq-review-justification-box p {
+  margin: 0;
+}
+
+
 
 
 

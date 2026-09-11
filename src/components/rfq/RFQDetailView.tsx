@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import type { RFQRecord, VendorQuotation, VendorResponse } from '../../types/rfq';
 import VendorQuotationModal from './VendorQuotationModal';
+import RFQComparativeView from './RFQComparativeView';
 import {
   ArrowLeft,
   Building2,
@@ -12,6 +13,7 @@ import {
   Clock,
   Eye,
   FileText,
+  FileSpreadsheet,
   MapPin,
   ShieldCheck,
   ChevronDown,
@@ -32,7 +34,7 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
   onBackToHub,
   onViewQuotation,
 }) => {
-  const [activeTab, setActiveTab] = useState<'quotes' | 'scope'>('quotes');
+  const [activeTab, setActiveTab] = useState<'quotes' | 'comparative' | 'scope'>('quotes');
   const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(0);
   
   // Local state for vendor responses to enable interactive quotation approval
@@ -98,10 +100,42 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
     setConfirmApproveTarget(null);
   };
 
+  const handleApproveVendorByName = (vendorName: string) => {
+    setVendorResponses((prev) =>
+      prev.map((resp) => {
+        if (
+          resp.vendorName.toLowerCase() === vendorName.toLowerCase() ||
+          resp.vendorName.toLowerCase().includes(vendorName.toLowerCase()) ||
+          vendorName.toLowerCase().includes(resp.vendorName.toLowerCase())
+        ) {
+          return {
+            ...resp,
+            status: 'Quotation Approved',
+            approvedDate: new Date().toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            }),
+          };
+        }
+        return resp;
+      })
+    );
+  };
+
   const handleOpenQuotation = (quotation: VendorQuotation) => {
     setActiveModalQuotation(quotation);
     if (onViewQuotation) {
       onViewQuotation(quotation);
+    }
+  };
+
+  const handleOpenQuotationByVendorName = (vendorName: string) => {
+    const target = vendorResponses.find(
+      (v) => v.vendorName.toLowerCase().includes(vendorName.toLowerCase())
+    );
+    if (target?.quotation) {
+      handleOpenQuotation(target.quotation);
     }
   };
 
@@ -203,7 +237,7 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
         </div>
       </div>
 
-      {/* Tabs Switcher: Vendor Responses vs Original Scope */}
+      {/* Tabs Switcher: Vendor Responses vs Comparative View vs Original Scope */}
       <div className="rfq-detail-tabs">
         <button
           type="button"
@@ -218,6 +252,17 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
 
         <button
           type="button"
+          className={`rfq-detail-tab ${activeTab === 'comparative' ? 'rfq-detail-tab--active' : ''}`}
+          onClick={() => setActiveTab('comparative')}
+        >
+          <FileSpreadsheet size={16} />
+          <span>
+            Comparative View ({quotesReceivedCount > 0 ? `${quotesReceivedCount} Quotes` : 'Matrix'})
+          </span>
+        </button>
+
+        <button
+          type="button"
           className={`rfq-detail-tab ${activeTab === 'scope' ? 'rfq-detail-tab--active' : ''}`}
           onClick={() => setActiveTab('scope')}
         >
@@ -227,6 +272,16 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
           </span>
         </button>
       </div>
+
+      {/* Tab: Comparative View */}
+      {activeTab === 'comparative' && (
+        <RFQComparativeView
+          rfq={rfq}
+          vendorResponses={vendorResponses}
+          onApproveVendor={handleApproveVendorByName}
+          onViewQuotationModal={handleOpenQuotationByVendorName}
+        />
+      )}
 
       {/* Tab 1: Vendor Responses with Individual Approval Capabilities */}
       {activeTab === 'quotes' && (

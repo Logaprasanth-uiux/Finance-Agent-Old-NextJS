@@ -632,6 +632,51 @@ export const mockVendors: Vendor[] = [
     logoInitial: 'TC',
     logoColor: '#0D9488',
   },
+  {
+    id: 'vnd-pa-01',
+    name: 'Prime Assemblies Inc',
+    code: 'VND-2024-001',
+    category: 'IT Hardware & Enterprise Systems',
+    location: 'Bengaluru, Karnataka',
+    rating: 4.9,
+    relationshipStatus: 'Preferred Partner',
+    email: 'b2b@primeassemblies.com',
+    phone: '+91 (80) 4129-8800',
+    leadTime: '5-7 Business Days',
+    paymentTerms: 'Net 30 Days',
+    logoInitial: 'PA',
+    logoColor: '#4F46E5',
+  },
+  {
+    id: 'vnd-ad-02',
+    name: 'ABC Digital Private Limited',
+    code: 'VND-2024-002',
+    category: 'Commercial Systems & Hardware',
+    location: 'Mumbai, Maharashtra',
+    rating: 4.7,
+    relationshipStatus: 'Approved Supplier',
+    email: 'quotes@abcdigital.in',
+    phone: '+91 (22) 6740-1122',
+    leadTime: '7-10 Business Days',
+    paymentTerms: 'Net 45 Days',
+    logoInitial: 'AD',
+    logoColor: '#059669',
+  },
+  {
+    id: 'vnd-dt-03',
+    name: 'Demo Technologies Private Limited',
+    code: 'VND-2024-003',
+    category: 'Enterprise Computing Solutions',
+    location: 'Hyderabad, Telangana',
+    rating: 4.8,
+    relationshipStatus: 'Verified Vendor',
+    email: 'enterprise@demotech.com',
+    phone: '+91 (40) 2388-9900',
+    leadTime: '3-5 Business Days',
+    paymentTerms: 'Net 30 Days',
+    logoInitial: 'DT',
+    logoColor: '#7C3AED',
+  },
 ];
 
 export const mockRFQCompanies: string[] = [
@@ -798,12 +843,159 @@ export const mockVendorQuotation_TechCorp: VendorQuotation = {
     'HP enterprise direct delivery. Includes pre-imaging and asset tagging services as per corporate specification.',
 };
 
+export const mockVendorQuotation_PrimeAssemblies: VendorQuotation = {
+  quotationNumber: 'PA-QTN-2026-8801',
+  vendorId: 'vnd-pa-01',
+  vendorName: 'Prime Assemblies Inc',
+  submittedDate: '28 Aug 2026',
+  submittedTime: '10:15 AM',
+  quotedItems: [
+    {
+      itemId: 'item-001',
+      itemName: 'Dell Commercial Laptop (Intel Core i7 / 16GB / 512GB SSD / RTX 3050)',
+      model: 'DELL-LAT-5450',
+      quantity: 20,
+      unit: 'Nos',
+      unitPrice: 82500,
+      lineTotal: 1650000,
+    },
+  ],
+  subtotal: 1650000,
+  taxRate: 0.18,
+  taxAmount: 297000,
+  totalAmount: 1947000,
+  deliveryTimeline: '5-7 Business Days',
+  paymentTerms: 'Net 30 Days',
+  validityDate: '30 Sep 2026',
+  vendorComments:
+    'Intel Core i7-1360P 13th Gen with NVIDIA RTX 3050 4GB graphics, dual-channel DDR5 RAM, and full 3-year enterprise OEM on-site warranty included.',
+};
+
+export const mockVendorQuotation_ABCDigital: VendorQuotation = {
+  quotationNumber: 'ABC-QTN-2026-4412',
+  vendorId: 'vnd-ad-02',
+  vendorName: 'ABC Digital Private Limited',
+  submittedDate: '28 Aug 2026',
+  submittedTime: '11:45 AM',
+  quotedItems: [
+    {
+      itemId: 'item-001',
+      itemName: 'Dell Commercial Laptop (Intel Core i5 / 16GB / 512GB SSD + 1TB HDD / Touch)',
+      model: 'DELL-LAT-5450-T',
+      quantity: 20,
+      unit: 'Nos',
+      unitPrice: 68000,
+      lineTotal: 1360000,
+    },
+  ],
+  subtotal: 1360000,
+  taxRate: 0.18,
+  taxAmount: 244800,
+  totalAmount: 1604800,
+  deliveryTimeline: '7-10 Business Days',
+  paymentTerms: 'Net 45 Days',
+  validityDate: '28 Sep 2026',
+  vendorComments:
+    'Budget-optimized Intel Core i5-1340P configuration with 10-point multi-touch display and dual storage (SSD + 1TB HDD).',
+};
+
+export const mockVendorQuotation_DemoTechnologies: VendorQuotation = {
+  quotationNumber: 'DT-QTN-2026-9034',
+  vendorId: 'vnd-dt-03',
+  vendorName: 'Demo Technologies Private Limited',
+  submittedDate: '29 Aug 2026',
+  submittedTime: '02:30 PM',
+  quotedItems: [
+    {
+      itemId: 'item-001',
+      itemName: 'Dell Commercial Laptop (AMD Ryzen 7 7840U / 16GB / 1TB SSD / 2.8K OLED)',
+      model: 'DELL-LAT-5450-OLED',
+      quantity: 20,
+      unit: 'Nos',
+      unitPrice: 94000,
+      lineTotal: 1880000,
+    },
+  ],
+  subtotal: 1880000,
+  taxRate: 0.18,
+  taxAmount: 338400,
+  totalAmount: 2218400,
+  deliveryTimeline: '3-5 Business Days',
+  paymentTerms: 'Net 30 Days',
+  validityDate: '05 Oct 2026',
+  vendorComments:
+    'Premium ultraportable AMD Ryzen 7 7840U configuration with 2.8K 90Hz OLED display, dual Thunderbolt 4, and 1TB SSD.',
+};
+
 export const mockCompanyRFQs: Record<
   string,
   { running: RFQRecord[]; completed: RFQRecord[] }
 > = {
   'Acme Technologies Pvt Ltd': {
     running: [
+      {
+        id: 'rfq-laptop-dell-001',
+        rfqNumber: 'RFQ-2026-0088',
+        company: 'Acme Technologies Pvt Ltd',
+        title: 'Dell Commercial Laptops Enterprise Procurement',
+        itemsSummary: 'Dell Commercial Laptop (20 Nos)',
+        itemCount: 1,
+        totalQuantity: 20,
+        vendorCount: 3,
+        vendors: [
+          'Prime Assemblies Inc',
+          'ABC Digital Private Limited',
+          'Demo Technologies Private Limited',
+        ],
+        createdDate: '24 Aug 2026',
+        deadlineDate: '30 Aug 2026',
+        timeRemaining: '2 days remaining',
+        status: 'Quotations Received',
+        isLocked: true,
+        estimatedBudget: 2000000,
+        quotesReceivedCount: 3,
+        category: 'Computing / Laptops',
+        deliveryLocation: 'DataTwin Corporate HQ — Bangalore Tech Park, Tower B',
+        notes:
+          'Please specify complete component breakdown (CPU, RAM, Storage, Display, Ports, Power, Security, Warranty). Delivery to Bangalore Tech Park.',
+        itemsDetail: [
+          {
+            item: mockCatalogItems[2],
+            quantity: 20,
+            specifications: [...mockCatalogItems[2].baseSpecs],
+            aiEnriched: true,
+          },
+        ],
+        vendorResponses: [
+          {
+            vendorId: 'vnd-pa-01',
+            vendorName: 'Prime Assemblies Inc',
+            status: 'Quotation Received',
+            quotationValue: 1947000,
+            submittedDate: '28 Aug 2026',
+            submittedTime: '10:15 AM',
+            quotation: mockVendorQuotation_PrimeAssemblies,
+          },
+          {
+            vendorId: 'vnd-ad-02',
+            vendorName: 'ABC Digital Private Limited',
+            status: 'Quotation Received',
+            quotationValue: 1604800,
+            submittedDate: '28 Aug 2026',
+            submittedTime: '11:45 AM',
+            quotation: mockVendorQuotation_ABCDigital,
+          },
+          {
+            vendorId: 'vnd-dt-03',
+            vendorName: 'Demo Technologies Private Limited',
+            status: 'Quotation Received',
+            quotationValue: 2218400,
+            submittedDate: '29 Aug 2026',
+            submittedTime: '02:30 PM',
+            quotation: mockVendorQuotation_DemoTechnologies,
+          },
+        ],
+      },
       {
         id: 'rfq-002',
         rfqNumber: 'RFQ-2026-0039',
