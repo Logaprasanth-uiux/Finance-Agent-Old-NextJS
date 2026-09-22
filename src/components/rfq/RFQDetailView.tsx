@@ -21,6 +21,8 @@ import {
   AlertCircle,
   Users,
   X,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 interface RFQDetailViewProps {
@@ -171,69 +173,64 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
         </div>
       </div>
 
-      {/* Main RFQ Header Card */}
-      <div className="rfq-detail-header-card">
+      {/* Main RFQ Header Card (Viewport Optimized) */}
+      <div className="rfq-detail-header-card rfq-detail-header-card--compact">
         <div className="rfq-detail-header-card__top">
-          <div>
+          <div className="rfq-detail-header-title-block">
             <div className="rfq-detail-num-row">
               <span className="rfq-detail-num">{rfq.rfqNumber}</span>
               <span className="rfq-detail-cat-tag">{rfq.category}</span>
             </div>
             <h1 className="rfq-detail-title">{rfq.title}</h1>
           </div>
+
+          {/* Compact RFQ Locked Status Pill */}
+          <div className="rfq-locked-compact-pill" title="This RFQ has been officially dispatched. Original specifications and commercial terms are immutable.">
+            <div className="rfq-locked-compact-icon">
+              <Lock size={13} />
+            </div>
+            <div className="rfq-locked-compact-text">
+              <span className="rfq-locked-compact-title">RFQ Locked — Sent to Vendors</span>
+              <span className="rfq-locked-compact-sub">Read-Only View • Specifications Immutable</span>
+            </div>
+          </div>
         </div>
 
-        {/* Company & Procurement Metadata Grid */}
-        <div className="rfq-detail-meta-grid">
+        {/* Company & Procurement Metadata Grid (Compact Row) */}
+        <div className="rfq-detail-meta-grid rfq-detail-meta-grid--compact">
           <div className="rfq-detail-meta-item">
-            <Building2 size={15} className="rfq-icon-indigo" />
-            <div>
+            <Building2 size={14} className="rfq-icon-indigo" />
+            <div className="rfq-meta-content">
               <span className="rfq-detail-meta-label">Issuing Legal Entity</span>
               <span className="rfq-detail-meta-value">{rfq.company || 'Acme Technologies Pvt Ltd'}</span>
             </div>
           </div>
 
           <div className="rfq-detail-meta-item">
-            <Calendar size={15} className="rfq-icon-indigo" />
-            <div>
+            <Calendar size={14} className="rfq-icon-indigo" />
+            <div className="rfq-meta-content">
               <span className="rfq-detail-meta-label">Created Date</span>
               <span className="rfq-detail-meta-value">{rfq.createdDate}</span>
             </div>
           </div>
 
           <div className="rfq-detail-meta-item">
-            <Clock size={15} className="rfq-icon-indigo" />
-            <div>
+            <Clock size={14} className="rfq-icon-indigo" />
+            <div className="rfq-meta-content">
               <span className="rfq-detail-meta-label">Closing Deadline</span>
               <span className="rfq-detail-meta-value">{rfq.deadlineDate} ({rfq.timeRemaining})</span>
             </div>
           </div>
 
           <div className="rfq-detail-meta-item">
-            <MapPin size={15} className="rfq-icon-indigo" />
-            <div>
+            <MapPin size={14} className="rfq-icon-indigo" />
+            <div className="rfq-meta-content">
               <span className="rfq-detail-meta-label">Delivery Location</span>
               <span className="rfq-detail-meta-value">
                 {rfq.deliveryLocation || 'DataTwin Corporate HQ — Bangalore Tech Park'}
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Locked State Banner */}
-        <div className="rfq-locked-notice-banner">
-          <div className="rfq-locked-notice-banner__left">
-            <div className="rfq-locked-icon-wrap">
-              <Lock size={16} />
-            </div>
-            <div>
-              <h4 className="rfq-locked-title">🔒 RFQ Locked — Sent to Vendors</h4>
-              <p className="rfq-locked-desc">
-                This RFQ has been officially dispatched to suppliers. In accordance with procurement governance, original specifications, requested quantities, and commercial terms are immutable.
-              </p>
-            </div>
-          </div>
-          <span className="rfq-locked-badge">Read-Only View</span>
         </div>
       </div>
 
@@ -257,7 +254,7 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
         >
           <FileSpreadsheet size={16} />
           <span>
-            Comparative View ({quotesReceivedCount > 0 ? `${quotesReceivedCount} Quotes` : 'Matrix'})
+            Comparative View ({quotesReceivedCount > 0 ? `${quotesReceivedCount >= 3 ? 'Top 3 Shortlisted' : `${quotesReceivedCount} Quotes`}` : 'Matrix'})
           </span>
         </button>
 
@@ -286,11 +283,99 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
       {/* Tab 1: Vendor Responses with Individual Approval Capabilities */}
       {activeTab === 'quotes' && (
         <div className="rfq-detail-section">
+          {/* AI Recommendation / Shortlisting Sourcing Insight */}
+          {quotesReceivedCount > 0 && (
+            <div className="rfq-ai-shortlist-container">
+              <div className="rfq-ai-shortlist-top">
+                <div className="rfq-ai-shortlist-title-wrap">
+                  <div className="rfq-ai-badge">
+                    <Sparkles size={14} className="rfq-ai-sparkle-icon" />
+                    <span>AI Shortlisting Recommendation</span>
+                  </div>
+                  <div className="rfq-ai-stat-tags">
+                    <span className="rfq-ai-chip">
+                      <strong>{quotesReceivedCount}</strong> Quotations Received &amp; Reviewed
+                    </span>
+                    <span className="rfq-ai-chip rfq-ai-chip--highlight">
+                      <strong>3</strong> Shortlisted for Detailed Comparison
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('comparative')}
+                  className="rfq-btn rfq-btn--sm rfq-btn--primary rfq-btn--ai-view-comp"
+                >
+                  <FileSpreadsheet size={14} />
+                  <span>View Comparative Analysis</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+
+              <div className="rfq-ai-shortlist-body">
+                <p className="rfq-ai-shortlist-lead">
+                  AI reviewed <strong>{quotesReceivedCount} vendor quotations</strong> and shortlisted <strong>3 vendors</strong> for detailed comparison based on specification alignment, commercial value, delivery suitability, and overall quotation quality.
+                </p>
+
+                <div className="rfq-ai-vendors-reasons-row">
+                  <div className="rfq-ai-shortlisted-cards-row">
+                    <div className="rfq-ai-shortlist-mini-card">
+                      <div className="rfq-ai-mini-card-head">
+                        <span className="rfq-ai-rank-badge">#1</span>
+                        <strong className="rfq-ai-mini-vendor-name">Prime Assemblies Inc</strong>
+                      </div>
+                      <span className="rfq-ai-mini-tag">Strong Spec Alignment</span>
+                      <span className="rfq-ai-mini-desc">i7-13700H, RTX 4060, 3 Yrs On-site Warranty (₹19.47L)</span>
+                    </div>
+
+                    <div className="rfq-ai-shortlist-mini-card">
+                      <div className="rfq-ai-mini-card-head">
+                        <span className="rfq-ai-rank-badge">#2</span>
+                        <strong className="rfq-ai-mini-vendor-name">ABC Digital Private Limited</strong>
+                      </div>
+                      <span className="rfq-ai-mini-tag rfq-ai-mini-tag--green">Competitive Total Cost</span>
+                      <span className="rfq-ai-mini-desc">i7-13650HX, 1TB SSD, 144Hz Display (₹16.05L)</span>
+                    </div>
+
+                    <div className="rfq-ai-shortlist-mini-card">
+                      <div className="rfq-ai-mini-card-head">
+                        <span className="rfq-ai-rank-badge">#3</span>
+                        <strong className="rfq-ai-mini-vendor-name">Demo Technologies Private Limited</strong>
+                      </div>
+                      <span className="rfq-ai-mini-tag rfq-ai-mini-tag--purple">Fast Delivery &amp; High RAM</span>
+                      <span className="rfq-ai-mini-desc">3-5 Days Lead Time, 32GB RAM, 165Hz QHD (₹22.18L)</span>
+                    </div>
+                  </div>
+
+                  <div className="rfq-ai-criteria-list">
+                    <div className="rfq-ai-criterion-item">
+                      <CheckCircle2 size={13} className="rfq-icon-green" />
+                      <span><strong>Strong specification alignment</strong> with baseline technical requirements</span>
+                    </div>
+                    <div className="rfq-ai-criterion-item">
+                      <CheckCircle2 size={13} className="rfq-icon-green" />
+                      <span><strong>Competitive total cost</strong> &amp; transparent statutory tax breakout</span>
+                    </div>
+                    <div className="rfq-ai-criterion-item">
+                      <CheckCircle2 size={13} className="rfq-icon-green" />
+                      <span><strong>Suitable delivery / lead time</strong> matching project operational timeline</span>
+                    </div>
+                    <div className="rfq-ai-criterion-item">
+                      <CheckCircle2 size={13} className="rfq-icon-green" />
+                      <span><strong>Favorable commercial terms</strong> &amp; 3-year comprehensive OEM warranty</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="rfq-vendor-responses-header">
             <div>
-              <h3 className="rfq-section-title">Vendor Responses</h3>
+              <h3 className="rfq-section-title">All Vendor Responses ({quotesReceivedCount} Received)</h3>
               <p className="rfq-section-sub">
-                Review submitted quotations from invited vendors and independently approve qualifying commercial proposals.
+                Review submitted quotations from invited vendors and independently evaluate commercial proposals.
               </p>
             </div>
 
@@ -339,6 +424,11 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
               vendorResponses.map((resp, idx) => {
                 const isApproved = resp.status === 'Quotation Approved';
                 const isReceived = resp.status === 'Quotation Received' || isApproved;
+                const isShortlisted = [
+                  'Prime Assemblies Inc',
+                  'ABC Digital Private Limited',
+                  'Demo Technologies Private Limited',
+                ].includes(resp.vendorName);
 
                 return (
                   <div
@@ -349,7 +439,7 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
                         : isReceived
                         ? 'rfq-vendor-response-card--received'
                         : 'rfq-vendor-response-card--pending'
-                    }`}
+                    } ${isShortlisted ? 'rfq-vendor-response-card--shortlisted' : ''}`}
                   >
                     <div className="rfq-vendor-response-card__top">
                       <div className="rfq-vendor-response-card__vendor-info">
@@ -358,15 +448,25 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
                           style={{
                             backgroundColor: isApproved
                               ? '#059669'
-                              : isReceived
+                              : isShortlisted
                               ? '#4F46E5'
+                              : isReceived
+                              ? '#3B82F6'
                               : '#94A3B8',
                           }}
                         >
                           {resp.vendorName.charAt(0)}
                         </div>
                         <div>
-                          <h4 className="rfq-vendor-response-name">{resp.vendorName}</h4>
+                          <div className="rfq-vendor-name-title-row">
+                            <h4 className="rfq-vendor-response-name">{resp.vendorName}</h4>
+                            {isShortlisted && (
+                              <span className="rfq-ai-shortlist-badge" title="Shortlisted by AI for detailed comparative analysis">
+                                <Sparkles size={11} />
+                                AI Shortlisted
+                              </span>
+                            )}
+                          </div>
                           <span className="rfq-vendor-response-sub">
                             {isReceived
                               ? `Quotation: ${resp.quotation?.quotationNumber || 'QTN-2026'}`

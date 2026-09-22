@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { RFQRecord, VendorResponse } from '../../types/rfq';
 import {
   mockLaptopSpecificationGroups,
@@ -32,6 +32,8 @@ import {
   ArrowRight,
   Info,
   Sparkles,
+  ListFilter,
+  Menu,
 } from 'lucide-react';
 
 interface RFQComparativeViewProps {
@@ -49,6 +51,36 @@ export const RFQComparativeView: React.FC<RFQComparativeViewProps> = ({
   // Active category filter: 'all' or category id
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Category dropdown menu state
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState<boolean>(false);
+  const [categoryMenuSearch, setCategoryMenuSearch] = useState<string>('');
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close category menu on click outside or Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        categoryMenuRef.current &&
+        !categoryMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsCategoryMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsCategoryMenuOpen(false);
+      }
+    };
+    if (isCategoryMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCategoryMenuOpen]);
 
   // Expand / Collapse State for Category Groups
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
@@ -192,6 +224,30 @@ export const RFQComparativeView: React.FC<RFQComparativeViewProps> = ({
     return filteredGroups.reduce((acc, g) => acc + g.rows.length, 0);
   }, [filteredGroups]);
 
+  // Complete Category Menu filtered groups
+  const filteredMenuGroups = useMemo(() => {
+    if (!categoryMenuSearch.trim()) return mockLaptopSpecificationGroups;
+    const q = categoryMenuSearch.toLowerCase();
+    return mockLaptopSpecificationGroups.filter(
+      (grp) =>
+        grp.name.toLowerCase().includes(q) ||
+        grp.description.toLowerCase().includes(q) ||
+        grp.rows.some((r) => r.feature.toLowerCase().includes(q))
+    );
+  }, [categoryMenuSearch]);
+
+  const handleSelectCategoryFromMenu = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setIsCategoryMenuOpen(false);
+    setCategoryMenuSearch('');
+    if (categoryId !== 'all') {
+      setCollapsedGroups((prev) => ({
+        ...prev,
+        [categoryId]: false,
+      }));
+    }
+  };
+
   // Handle final approval from review modal
   const handleConfirmApproval = () => {
     onApproveVendor(selectedVendorForApproval);
@@ -249,12 +305,33 @@ export const RFQComparativeView: React.FC<RFQComparativeViewProps> = ({
               </span>
             </div>
             <div className="rfq-comp-meta-item">
-              <span className="rfq-comp-meta-label">Submissions</span>
+              <span className="rfq-comp-meta-label">AI Shortlist</span>
               <span className="rfq-comp-meta-value rfq-comp-meta-value--highlight">
-                <Layers size={14} />
-                3 of 3 Vendor Responses
+                <Sparkles size={14} />
+                3 of {vendorResponses?.length || 20} Quotes Evaluated
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Compact AI Recommendation Summary (Purple AI Treatment) */}
+        <div className="rfq-comp-ai-summary-bar">
+          <div className="rfq-comp-ai-summary-left">
+            <div className="rfq-ai-badge-sm">
+              <Sparkles size={13} className="rfq-ai-sparkle-icon" />
+              <span>AI Shortlisting Summary</span>
+            </div>
+            <p className="rfq-comp-ai-summary-text">
+              AI reviewed <strong>{vendorResponses?.length || 20} received quotations</strong> and shortlisted the <strong>top 3 vendors</strong> for detailed side-by-side technical specification alignment and commercial proposal evaluation.
+            </p>
+          </div>
+          <div className="rfq-comp-ai-summary-right">
+            <span className="rfq-ai-tag">
+              <strong>{vendorResponses?.length || 20}</strong> Quotes Reviewed
+            </span>
+            <span className="rfq-ai-tag rfq-ai-tag--active">
+              <strong>3</strong> Shortlisted in Matrix
+            </span>
           </div>
         </div>
 
@@ -304,65 +381,184 @@ export const RFQComparativeView: React.FC<RFQComparativeViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Control Bar: Filter Categories, Search, Expand/Collapse */}
-      <div className="rfq-comparative-controls-bar">
-        <div className="rfq-comp-search-wrap">
-          <Search size={16} className="rfq-comp-search-icon" />
-          <input
-            type="text"
-            placeholder="Search specifications, vendor responses, or notes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="rfq-comp-search-input"
-          />
-          {searchQuery && (
+      {/* 2. Control Bar: Filter Categories, Search, Expand/Collapse & In-Flow Category Panel */}
+      <div className="rfq-comparative-controls-card" ref={categoryMenuRef}>
+        <div className="rfq-comparative-controls-bar">
+          <div className="rfq-comp-search-wrap">
+            <Search size={16} className="rfq-comp-search-icon" />
+            <input
+              type="text"
+              placeholder="Search specifications, vendor responses, or notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="rfq-comp-search-input"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="rfq-comp-search-clear"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Category Filters: Horizontal Quick Access Pills + Complete Category Menu Toggle */}
+          <div className="rfq-comp-category-filters-container">
+            <div className="rfq-comp-category-pills">
+              <button
+                type="button"
+                className={`rfq-category-pill ${selectedCategory === 'all' ? 'rfq-category-pill--active' : ''}`}
+                onClick={() => setSelectedCategory('all')}
+              >
+                All Specs ({totalAllSpecs})
+              </button>
+              {mockLaptopSpecificationGroups.map((grp) => (
+                <button
+                  key={grp.id}
+                  type="button"
+                  className={`rfq-category-pill ${selectedCategory === grp.id ? 'rfq-category-pill--active' : ''}`}
+                  onClick={() => {
+                    setSelectedCategory(grp.id);
+                    setCollapsedGroups((prev) => ({ ...prev, [grp.id]: false }));
+                  }}
+                >
+                  {grp.name} ({grp.rows.length})
+                </button>
+              ))}
+            </div>
+
+            {/* Category Menu Toggle Button */}
+            <div className="rfq-category-menu-wrap">
+              <button
+                type="button"
+                className={`rfq-category-menu-btn ${isCategoryMenuOpen ? 'rfq-category-menu-btn--open' : ''} ${selectedCategory !== 'all' ? 'rfq-category-menu-btn--has-selection' : ''}`}
+                onClick={() => setIsCategoryMenuOpen((prev) => !prev)}
+                title="Toggle complete specification categories panel"
+                aria-label="All Specification Categories"
+                aria-expanded={isCategoryMenuOpen}
+              >
+                <ListFilter size={14} className="rfq-category-menu-icon" />
+                <span className="rfq-category-menu-btn-label">Categories</span>
+                <ChevronDown
+                  size={13}
+                  className={`rfq-category-menu-chevron ${isCategoryMenuOpen ? 'rfq-category-menu-chevron--open' : ''}`}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="rfq-comp-expand-controls">
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
-              className="rfq-comp-search-clear"
-              aria-label="Clear search"
+              onClick={expandAllGroups}
+              className="rfq-btn rfq-btn--xs rfq-btn--subtle"
             >
-              <X size={14} />
+              Expand All
             </button>
-          )}
-        </div>
-
-        <div className="rfq-comp-category-pills">
-          <button
-            type="button"
-            className={`rfq-category-pill ${selectedCategory === 'all' ? 'rfq-category-pill--active' : ''}`}
-            onClick={() => setSelectedCategory('all')}
-          >
-            All Specs ({totalAllSpecs})
-          </button>
-          {mockLaptopSpecificationGroups.map((grp) => (
             <button
-              key={grp.id}
               type="button"
-              className={`rfq-category-pill ${selectedCategory === grp.id ? 'rfq-category-pill--active' : ''}`}
-              onClick={() => setSelectedCategory(grp.id)}
+              onClick={collapseAllGroups}
+              className="rfq-btn rfq-btn--xs rfq-btn--subtle"
             >
-              {grp.name} ({grp.rows.length})
+              Collapse All
             </button>
-          ))}
+          </div>
         </div>
 
-        <div className="rfq-comp-expand-controls">
-          <button
-            type="button"
-            onClick={expandAllGroups}
-            className="rfq-btn rfq-btn--xs rfq-btn--subtle"
-          >
-            Expand All
-          </button>
-          <button
-            type="button"
-            onClick={collapseAllGroups}
-            className="rfq-btn rfq-btn--xs rfq-btn--subtle"
-          >
-            Collapse All
-          </button>
-        </div>
+        {/* In-Flow Category Panel: Occupies normal layout space, pushes comparison table down */}
+        {isCategoryMenuOpen && (
+          <div className="rfq-category-inflow-panel">
+            <div className="rfq-category-inflow-header">
+              <div className="rfq-category-inflow-title">
+                <Layers size={15} className="rfq-icon-indigo" />
+                <span>All Specification Groups</span>
+              </div>
+              <div className="rfq-category-inflow-header-right">
+                <span className="rfq-category-inflow-count">
+                  {mockLaptopSpecificationGroups.length} Groups · {totalAllSpecs} Specs
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryMenuOpen(false)}
+                  className="rfq-category-inflow-close"
+                  aria-label="Close categories panel"
+                  title="Close panel"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+
+            <div className="rfq-category-inflow-search">
+              <Search size={14} className="rfq-category-inflow-search-icon" />
+              <input
+                type="text"
+                placeholder="Search category name or feature..."
+                value={categoryMenuSearch}
+                onChange={(e) => setCategoryMenuSearch(e.target.value)}
+                className="rfq-category-inflow-search-input"
+                autoFocus
+              />
+              {categoryMenuSearch && (
+                <button
+                  type="button"
+                  onClick={() => setCategoryMenuSearch('')}
+                  className="rfq-category-inflow-clear-btn"
+                  aria-label="Clear search"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            <div className="rfq-category-inflow-grid">
+              <button
+                type="button"
+                className={`rfq-category-inflow-item ${selectedCategory === 'all' ? 'rfq-category-inflow-item--active' : ''}`}
+                onClick={() => handleSelectCategoryFromMenu('all')}
+              >
+                <div className="rfq-category-inflow-item-left">
+                  <span className="rfq-category-inflow-dot rfq-category-inflow-dot--all" />
+                  <div className="rfq-category-inflow-item-info">
+                    <span className="rfq-category-inflow-name">All Specifications</span>
+                    <span className="rfq-category-inflow-desc">Complete matrix ({mockLaptopSpecificationGroups.length} categories)</span>
+                  </div>
+                </div>
+                <span className="rfq-category-inflow-badge">{totalAllSpecs}</span>
+              </button>
+
+              {filteredMenuGroups.map((grp) => {
+                const isSelected = selectedCategory === grp.id;
+                return (
+                  <button
+                    key={grp.id}
+                    type="button"
+                    className={`rfq-category-inflow-item ${isSelected ? 'rfq-category-inflow-item--active' : ''}`}
+                    onClick={() => handleSelectCategoryFromMenu(grp.id)}
+                  >
+                    <div className="rfq-category-inflow-item-left">
+                      <span className="rfq-category-inflow-num">{grp.groupNo}</span>
+                      <div className="rfq-category-inflow-item-info">
+                        <span className="rfq-category-inflow-name">{grp.name}</span>
+                        <span className="rfq-category-inflow-desc">{grp.description}</span>
+                      </div>
+                    </div>
+                    <span className="rfq-category-inflow-badge">{grp.rows.length}</span>
+                  </button>
+                );
+              })}
+
+              {filteredMenuGroups.length === 0 && (
+                <div className="rfq-category-inflow-empty">
+                  No categories matching "{categoryMenuSearch}"
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3. Main Specification Comparison Matrix */}

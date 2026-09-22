@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { RFQRecord } from '../../types/rfq';
 import { getRFQsForCompany } from '../../data/rfqMockData';
-import { formatCurrencyINR } from '../../data/arMockData';
+import { formatCurrencyINR } from '../../utils/formatters';
 import {
   Plus,
   Clock,
