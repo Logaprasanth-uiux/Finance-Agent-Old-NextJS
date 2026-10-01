@@ -19,22 +19,28 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  AlertTriangle,
   Users,
   X,
   Sparkles,
   ArrowRight,
+  Copy,
+  Paperclip,
+  FileCheck,
 } from 'lucide-react';
 
 interface RFQDetailViewProps {
   rfq: RFQRecord;
   onBackToHub: () => void;
   onViewQuotation?: (quotation: VendorQuotation) => void;
+  onDuplicateRFQ?: (rfq: RFQRecord) => void;
 }
 
 export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
   rfq,
   onBackToHub,
   onViewQuotation,
+  onDuplicateRFQ,
 }) => {
   const [activeTab, setActiveTab] = useState<'quotes' | 'comparative' | 'scope'>('quotes');
   const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(0);
@@ -52,22 +58,6 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
   const [activeModalQuotation, setActiveModalQuotation] =
     useState<VendorQuotation | null>(null);
 
-  const getStatusBadge = (status: RFQRecord['status']) => {
-    switch (status) {
-      case 'Quotations Received':
-        return <span className="rfq-badge rfq-badge--green">Quotations Received</span>;
-      case 'Awaiting Quotations':
-        return <span className="rfq-badge rfq-badge--blue">Awaiting Quotations</span>;
-      case 'Closing Soon':
-        return <span className="rfq-badge rfq-badge--amber">Closing Soon</span>;
-      case 'Closed':
-        return <span className="rfq-badge rfq-badge--gray">Closed / Awarded</span>;
-      case 'Sent to Vendors':
-      default:
-        return <span className="rfq-badge rfq-badge--indigo">{status}</span>;
-    }
-  };
-
   const invitedCount = rfq.vendorCount || vendorResponses.length;
   const quotesReceivedCount = vendorResponses.filter(
     (v) => v.status === 'Quotation Received' || v.status === 'Quotation Approved'
@@ -78,6 +68,49 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
   const awaitingResponseCount = vendorResponses.filter(
     (v) => v.status === 'Awaiting Response'
   ).length;
+
+  const getStatusBadge = (status: RFQRecord['status']) => {
+    switch (status) {
+      case 'Quotations Received': {
+        const count = quotesReceivedCount > 0 ? quotesReceivedCount : (rfq.quotesReceivedCount || 0);
+        return (
+          <span className="rfq-landing-badge rfq-landing-badge--success">
+            <CheckCircle2 size={12} />
+            <span>{count > 0 ? `${count} ` : ''}Quotations Received</span>
+          </span>
+        );
+      }
+      case 'Awaiting Quotations':
+        return (
+          <span className="rfq-landing-badge rfq-landing-badge--awaiting">
+            <Clock size={12} />
+            <span>Awaiting Quotations</span>
+          </span>
+        );
+      case 'Closing Soon':
+        return (
+          <span className="rfq-landing-badge rfq-landing-badge--urgent">
+            <AlertTriangle size={12} />
+            <span>Closing Soon</span>
+          </span>
+        );
+      case 'Closed':
+        return (
+          <span className="rfq-landing-badge rfq-landing-badge--closed">
+            <FileCheck size={12} />
+            <span>Closed / Awarded</span>
+          </span>
+        );
+      case 'Sent to Vendors':
+      default:
+        return (
+          <span className="rfq-landing-badge rfq-landing-badge--sent">
+            <Users size={12} />
+            <span>{status}</span>
+          </span>
+        );
+    }
+  };
 
   const handleExecuteApproval = () => {
     if (!confirmApproveTarget) return;
@@ -165,10 +198,17 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
           <span>Back to RFQ Hub</span>
         </button>
 
-        <div className="rfq-detail-header-status">
-          {getStatusBadge(rfq.status)}
-          {rfq.isUrgent && (
-            <span className="rfq-badge rfq-badge--urgent">Closing in &lt; 24h</span>
+        <div className="rfq-detail-top-nav__actions">
+          {onDuplicateRFQ && (
+            <button
+              type="button"
+              onClick={() => onDuplicateRFQ(rfq)}
+              className="rfq-btn rfq-btn--sm rfq-btn--primary rfq-btn--duplicate"
+              title="Duplicate this RFQ as a new draft"
+            >
+              <Copy size={14} />
+              <span>Duplicate RFQ</span>
+            </button>
           )}
         </div>
       </div>
@@ -180,6 +220,13 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
             <div className="rfq-detail-num-row">
               <span className="rfq-detail-num">{rfq.rfqNumber}</span>
               <span className="rfq-detail-cat-tag">{rfq.category}</span>
+              {getStatusBadge(rfq.status)}
+              {rfq.isUrgent && (
+                <span className="rfq-landing-badge rfq-landing-badge--urgent">
+                  <AlertTriangle size={12} />
+                  <span>Closing in &lt; 24h</span>
+                </span>
+              )}
             </div>
             <h1 className="rfq-detail-title">{rfq.title}</h1>
           </div>
@@ -521,6 +568,13 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
                               Submitted: <strong>{resp.submittedDate}</strong> {resp.submittedTime && `at ${resp.submittedTime}`}
                             </span>
                           </div>
+
+                          {resp.quotation?.attachments && resp.quotation.attachments.length > 0 && (
+                            <div className="rfq-vendor-attachments-indicator">
+                              <Paperclip size={12} className="rfq-icon-indigo" />
+                              <span>{resp.quotation.attachments.length} Supporting Attachment{resp.quotation.attachments.length > 1 ? 's' : ''}</span>
+                            </div>
+                          )}
 
                           {isApproved && (
                             <div className="rfq-vendor-approved-tag">

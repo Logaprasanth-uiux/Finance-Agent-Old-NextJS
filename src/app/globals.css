@@ -13573,6 +13573,373 @@ body {
   margin: 0;
 }
 
+/* ========================================================================= */
+/* VENDOR PORTAL - WARRANTY & GENERAL REMARKS ATTACHMENTS */
+/* ========================================================================= */
+
+.vp-attachments-section {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.vp-attachments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vp-attachments-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vp-attachments-hint {
+  font-size: 0.7rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.vp-attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.vp-attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+
+.vp-attachment-item:hover {
+  border-color: #94A3B8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.vp-attachment-item--readonly {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+.vp-attachment-info,
+.vp-attachment-item__left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.vp-attachment-name {
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.vp-attachment-actions,
+.vp-attachment-item__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.vp-attachment-size {
+  font-size: 0.75rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.vp-attachment-remove-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  color: #94A3B8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.vp-attachment-remove-btn:hover {
+  color: #DC2626;
+  background: #FEE2E2;
+}
+
+.vp-attachment-add-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: #FFFFFF;
+  border: 1px dashed #4F46E5;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4F46E5;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vp-attachment-add-btn:hover {
+  background: #EEF2FF;
+  border-color: #4338CA;
+}
+
+.vp-attachment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+/* ========================================================================= */
+/* BUYER RFQ - CARD ACTION MENU & DUPLICATE RFQ WORKFLOW */
+/* ========================================================================= */
+
+.rfq-dashboard-card__badges-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.rfq-card-menu-wrap {
+  position: relative;
+}
+
+.rfq-card-menu-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px;
+  color: #64748B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.rfq-card-menu-btn:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.rfq-card-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  min-width: 175px;
+  padding: 0.35rem 0;
+  z-index: 50;
+  animation: rfqMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes rfqMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rfq-card-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  background: transparent;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.rfq-card-menu-item:hover {
+  background: #F8FAFC;
+  color: #4F46E5;
+}
+
+.rfq-detail-top-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rfq-btn--duplicate {
+  background: #4F46E5;
+  color: #FFFFFF;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+  transition: all 0.15s ease;
+}
+
+.rfq-btn--duplicate:hover {
+  background: #4338CA;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+  transform: translateY(-1px);
+}
+
+.rfq-duplicated-source-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #3730A3;
+  margin-bottom: 1.25rem;
+  animation: rfqBannerFadeIn 0.25s ease-out;
+}
+
+@keyframes rfqBannerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rfq-vendor-attachments-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.rfq-quotation-attachments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.rfq-quotation-attachment-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.rfq-quotation-attachment-card:hover {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.rfq-quotation-attachment-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.rfq-quotation-attachment-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.rfq-quotation-attachment-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rfq-quotation-attachment-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.rfq-quotation-attachment-size {
+  font-size: 0.72rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.rfq-attachment-view-btn {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+
 
 
 

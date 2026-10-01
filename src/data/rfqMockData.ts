@@ -776,6 +776,20 @@ export const mockVendorQuotation_AcmeGlobal: VendorQuotation = {
   validityDate: '30 Days from submission',
   vendorComments:
     'Includes comprehensive 3-year OEM on-site warranty for all enterprise compute and display hardware. Pre-configured OEM images and consolidated transit insurance included.',
+  attachments: [
+    {
+      id: 'att-ag-1',
+      name: 'Technical_Scope_and_Warranty_Details.pdf',
+      size: '2.4 MB',
+      type: 'pdf',
+    },
+    {
+      id: 'att-ag-2',
+      name: 'Mounting_Bracket_and_Compliance_Spec.docx',
+      size: '850 KB',
+      type: 'docx',
+    },
+  ],
 };
 
 export const mockVendorQuotation_ApexRetail: VendorQuotation = {
@@ -813,6 +827,14 @@ export const mockVendorQuotation_ApexRetail: VendorQuotation = {
   validityDate: '30 Days',
   vendorComments:
     'Authorized tier-1 distributor pricing. Free consolidated shipping directly to Bangalore Tech Park site included.',
+  attachments: [
+    {
+      id: 'att-ar-1',
+      name: 'Tier1_Distributor_Authorization_Letter.pdf',
+      size: '1.2 MB',
+      type: 'pdf',
+    },
+  ],
 };
 
 export const mockVendorQuotation_TechCorp: VendorQuotation = {
@@ -841,6 +863,14 @@ export const mockVendorQuotation_TechCorp: VendorQuotation = {
   validityDate: '25 Sep 2026',
   vendorComments:
     'HP enterprise direct delivery. Includes pre-imaging and asset tagging services as per corporate specification.',
+  attachments: [
+    {
+      id: 'att-tc-1',
+      name: 'HP_Direct_Partner_Warranty_SLA.pdf',
+      size: '3.1 MB',
+      type: 'pdf',
+    },
+  ],
 };
 
 export const mockVendorQuotation_PrimeAssemblies: VendorQuotation = {
@@ -869,6 +899,20 @@ export const mockVendorQuotation_PrimeAssemblies: VendorQuotation = {
   validityDate: '30 Sep 2026',
   vendorComments:
     'Intel Core i7-1360P 13th Gen with NVIDIA RTX 3050 4GB graphics, dual-channel DDR5 RAM, and full 3-year enterprise OEM on-site warranty included.',
+  attachments: [
+    {
+      id: 'att-pa-1',
+      name: 'Dell_Latitude_Commercial_Datasheet.pdf',
+      size: '1.8 MB',
+      type: 'pdf',
+    },
+    {
+      id: 'att-pa-2',
+      name: 'ProSupport_Plus_Service_Description.pdf',
+      size: '920 KB',
+      type: 'pdf',
+    },
+  ],
 };
 
 export const mockVendorQuotation_ABCDigital: VendorQuotation = {
@@ -897,6 +941,14 @@ export const mockVendorQuotation_ABCDigital: VendorQuotation = {
   validityDate: '28 Sep 2026',
   vendorComments:
     'Budget-optimized Intel Core i5-1340P configuration with 10-point multi-touch display and dual storage (SSD + 1TB HDD).',
+  attachments: [
+    {
+      id: 'att-ad-1',
+      name: 'ABC_Digital_Storage_Upgrade_Scope.docx',
+      size: '640 KB',
+      type: 'docx',
+    },
+  ],
 };
 
 export const mockVendorQuotation_DemoTechnologies: VendorQuotation = {
@@ -925,6 +977,14 @@ export const mockVendorQuotation_DemoTechnologies: VendorQuotation = {
   validityDate: '05 Oct 2026',
   vendorComments:
     'Premium ultraportable AMD Ryzen 7 7840U configuration with 2.8K 90Hz OLED display, dual Thunderbolt 4, and 1TB SSD.',
+  attachments: [
+    {
+      id: 'att-dt-1',
+      name: 'OLED_Display_and_FastDelivery_Schedule.pdf',
+      size: '1.5 MB',
+      type: 'pdf',
+    },
+  ],
 };
 
 export const mockCompanyRFQs: Record<

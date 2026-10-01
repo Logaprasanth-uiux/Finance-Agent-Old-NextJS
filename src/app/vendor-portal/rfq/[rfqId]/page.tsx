@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, use, useEffect } from 'react';
+import React, { useState, useMemo, use, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import type { RFQRecord, ItemSpecification, QuotedItem, VendorQuotation, VendorResponse } from '@/types/rfq';
+import type { RFQRecord, ItemSpecification, QuotedItem, VendorQuotation, VendorResponse, VendorAttachment } from '@/types/rfq';
 import { mockCompanyRFQs, mockCatalogItems } from '@/data/rfqMockData';
 import {
   ArrowLeft,
@@ -24,10 +24,36 @@ import {
   Send,
   Check,
   ShieldCheck,
-  FileCheck
+  FileCheck,
+  Paperclip,
+  Plus,
+  X,
+  FileSpreadsheet,
+  FileArchive,
+  Download,
+  FileText,
 } from 'lucide-react';
 
 const CURRENT_VENDOR_NAME = 'Acme Global';
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 KB';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+const getFileIcon = (type = '', name = '') => {
+  const ext = (type || name.split('.').pop() || '').toLowerCase();
+  if (['xls', 'xlsx', 'csv'].includes(ext)) {
+    return <FileSpreadsheet size={15} style={{ color: '#059669', flexShrink: 0 }} />;
+  }
+  if (['zip', 'rar', '7z', 'tar'].includes(ext)) {
+    return <FileArchive size={15} style={{ color: '#D97706', flexShrink: 0 }} />;
+  }
+  return <FileText size={15} style={{ color: '#4F46E5', flexShrink: 0 }} />;
+};
 
 const GST_RATE_OPTIONS = [
   { label: '0% (Exempt)', value: 0 },
@@ -36,6 +62,7 @@ const GST_RATE_OPTIONS = [
   { label: '18% GST', value: 0.18 },
   { label: '28% GST', value: 0.28 },
 ];
+
 
 interface PageProps {
   params: Promise<{ rfqId: string }>;
@@ -172,6 +199,67 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
   const [vendorComments, setVendorComments] = useState(
     'Includes comprehensive 3-year on-site OEM warranty. Consolidated delivery to facility with transit insurance.'
   );
+
+  // Attachments in Warranty & General Remarks
+  const [attachments, setAttachments] = useState<VendorAttachment[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`vp_quote_${rfqId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved) as VendorQuotation;
+          if (parsed.attachments && Array.isArray(parsed.attachments)) {
+            return parsed.attachments;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    if (existingVendorResponse?.quotation?.attachments) {
+      return existingVendorResponse.quotation.attachments;
+    }
+
+    return [
+      {
+        id: 'att-ag-1',
+        name: 'Technical_Scope_and_Warranty_Details.pdf',
+        size: '2.4 MB',
+        type: 'pdf',
+      },
+      {
+        id: 'att-ag-2',
+        name: 'Mounting_Bracket_and_Compliance_Spec.docx',
+        size: '850 KB',
+        type: 'docx',
+      },
+    ];
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const reviewFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newItems: VendorAttachment[] = Array.from(files).map((file) => {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+      return {
+        id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        name: file.name,
+        size: formatFileSize(file.size),
+        type: ext,
+      };
+    });
+
+    setAttachments((prev) => [...prev, ...newItems]);
+    e.target.value = '';
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
 
   // Submission metadata state
   const [submittedQuoteMeta, setSubmittedQuoteMeta] = useState<{
@@ -425,6 +513,12 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
         paymentTerms: paymentTerms,
         validityDate: validityDate,
         vendorComments: vendorComments,
+        attachments: attachments.map((a) => ({
+          id: a.id,
+          name: a.name,
+          size: a.size,
+          type: a.type,
+        })),
       };
 
       // 1. Update in-memory mockCompanyRFQs
@@ -1000,6 +1094,62 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                   className="vp-form-textarea"
                   placeholder="Include warranty details, transit insurance, or logistics terms..."
                 />
+
+                {/* Attachments Section directly below Warranty & General Remarks */}
+                <div className="vp-attachments-section">
+                  <div className="vp-attachments-header">
+                    <span className="vp-attachments-label">
+                      <Paperclip size={13} />
+                      <span>Attachments {attachments.length > 0 && `(${attachments.length})`}</span>
+                    </span>
+                    <span className="vp-attachments-hint">
+                      PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, ZIP
+                    </span>
+                  </div>
+
+                  {attachments.length > 0 && (
+                    <div className="vp-attachments-list">
+                      {attachments.map((att) => (
+                        <div key={att.id} className="vp-attachment-item">
+                          <div className="vp-attachment-info">
+                            {getFileIcon(att.type, att.name)}
+                            <span className="vp-attachment-name" title={att.name}>{att.name}</span>
+                          </div>
+                          <div className="vp-attachment-actions">
+                            <span className="vp-attachment-size">{att.size}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAttachment(att.id)}
+                              className="vp-attachment-remove-btn"
+                              title="Remove attachment"
+                              aria-label="Remove attachment"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    multiple
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
+                    onChange={handleFileUpload}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="vp-attachment-add-btn"
+                  >
+                    <Plus size={14} />
+                    <span>Add Attachment</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1479,6 +1629,62 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                       className="vp-form-textarea"
                       placeholder="Include warranty details, transit insurance, or logistics terms..."
                     />
+
+                    {/* Attachments Section in Review Edit Mode */}
+                    <div className="vp-attachments-section" style={{ marginTop: '0.75rem' }}>
+                      <div className="vp-attachments-header">
+                        <span className="vp-attachments-label">
+                          <Paperclip size={13} />
+                          <span>Attachments {attachments.length > 0 && `(${attachments.length})`}</span>
+                        </span>
+                        <span className="vp-attachments-hint">
+                          PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, ZIP
+                        </span>
+                      </div>
+
+                      {attachments.length > 0 && (
+                        <div className="vp-attachments-list">
+                          {attachments.map((att) => (
+                            <div key={att.id} className="vp-attachment-item">
+                              <div className="vp-attachment-info">
+                                {getFileIcon(att.type, att.name)}
+                                <span className="vp-attachment-name" title={att.name}>{att.name}</span>
+                              </div>
+                              <div className="vp-attachment-actions">
+                                <span className="vp-attachment-size">{att.size}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAttachment(att.id)}
+                                  className="vp-attachment-remove-btn"
+                                  title="Remove attachment"
+                                  aria-label="Remove attachment"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <input
+                        type="file"
+                        ref={reviewFileInputRef}
+                        style={{ display: 'none' }}
+                        multiple
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
+                        onChange={handleFileUpload}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => reviewFileInputRef.current?.click()}
+                        className="vp-attachment-add-btn"
+                      >
+                        <Plus size={14} />
+                        <span>Add Attachment</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1490,6 +1696,27 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                     <span style={{ color: '#64748B' }}>Warranty &amp; General Remarks:</span>
                     <p style={{ marginTop: '0.2rem', color: '#334155', lineHeight: 1.5 }}>{vendorComments || 'None'}</p>
                   </div>
+
+                  {/* Read-Only Attachments in Review Mode */}
+                  {attachments.length > 0 && (
+                    <div style={{ marginTop: '0.5rem', paddingTop: '0.65rem', borderTop: '1px solid #F1F5F9' }}>
+                      <span style={{ color: '#64748B', fontWeight: 600, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.45rem' }}>
+                        <Paperclip size={13} />
+                        <span>Quotation Attachments ({attachments.length}):</span>
+                      </span>
+                      <div className="vp-attachments-list vp-attachments-list--readonly">
+                        {attachments.map((att) => (
+                          <div key={att.id} className="vp-attachment-item vp-attachment-item--readonly">
+                            <div className="vp-attachment-info">
+                              {getFileIcon(att.type, att.name)}
+                              <span className="vp-attachment-name" title={att.name}>{att.name}</span>
+                            </div>
+                            <span className="vp-attachment-size">{att.size}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1688,6 +1915,33 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                 <div><span style={{ color: '#64748B' }}>Payment Terms:</span> <strong>{paymentTerms}</strong></div>
                 <div><span style={{ color: '#64748B' }}>Quotation Validity:</span> <strong>{validityDate}</strong></div>
                 <div><span style={{ color: '#64748B' }}>Warranty &amp; General Remarks:</span> <p style={{ marginTop: '0.2rem', color: '#334155', lineHeight: 1.5 }}>{vendorComments || 'None'}</p></div>
+
+                {/* Submitted Read-Only Attachments */}
+                {attachments.length > 0 && (
+                  <div style={{ marginTop: '0.65rem', paddingTop: '0.75rem', borderTop: '1px solid #F1F5F9' }}>
+                    <span style={{ color: '#64748B', fontWeight: 600, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.5rem' }}>
+                      <Paperclip size={13} />
+                      <span>Submitted Attachments ({attachments.length}):</span>
+                    </span>
+                    <div className="vp-attachments-list vp-attachments-list--readonly">
+                      {attachments.map((att) => (
+                        <div key={att.id} className="vp-attachment-item vp-attachment-item--readonly">
+                          <div className="vp-attachment-info">
+                            {getFileIcon(att.type, att.name)}
+                            <span className="vp-attachment-name" title={att.name}>{att.name}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span className="vp-attachment-size">{att.size}</span>
+                            <span className="vp-attachment-pill">
+                              <FileCheck size={11} />
+                              <span>Recorded</span>
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

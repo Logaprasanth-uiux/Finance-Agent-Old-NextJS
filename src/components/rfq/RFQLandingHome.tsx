@@ -16,6 +16,8 @@ import {
   ChevronDown,
   Edit3,
   Lock,
+  MoreVertical,
+  Copy,
 } from 'lucide-react';
 
 interface RFQLandingHomeProps {
@@ -25,6 +27,7 @@ interface RFQLandingHomeProps {
   onCreateNewRFQ: () => void;
   onViewRFQ: (rfq: RFQRecord) => void;
   onEditDraft: (rfq: RFQRecord) => void;
+  onDuplicateRFQ: (rfq: RFQRecord) => void;
 }
 
 export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
@@ -34,8 +37,19 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
   onCreateNewRFQ,
   onViewRFQ,
   onEditDraft,
+  onDuplicateRFQ,
 }) => {
   const [filterTab, setFilterTab] = useState<string>('ALL');
+  const [openMenuRfqId, setOpenMenuRfqId] = useState<string | null>(null);
+
+  // Close card action menu on document click
+  React.useEffect(() => {
+    const handleDocClick = () => setOpenMenuRfqId(null);
+    if (openMenuRfqId) {
+      window.addEventListener('click', handleDocClick);
+      return () => window.removeEventListener('click', handleDocClick);
+    }
+  }, [openMenuRfqId]);
 
   const { running: runningRFQs, completed: completedRFQs } =
     getRFQsForCompany(selectedCompany);
@@ -350,8 +364,66 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
                   <span className="rfq-dashboard-card__num">{rfq.rfqNumber}</span>
                   <span className="rfq-dashboard-card__category">{rfq.category}</span>
                 </div>
-                <div className="rfq-dashboard-card__badges">
+                <div className="rfq-dashboard-card__badges-group">
                   {getStatusBadge(rfq)}
+                  <div className="rfq-card-menu-wrap">
+                    <button
+                      type="button"
+                      className="rfq-card-menu-btn"
+                      title="More actions"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuRfqId(openMenuRfqId === rfq.id ? null : rfq.id);
+                      }}
+                      aria-label="More actions"
+                    >
+                      <MoreVertical size={15} />
+                    </button>
+
+                    {openMenuRfqId === rfq.id && (
+                      <div
+                        className="rfq-card-menu-dropdown"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="rfq-card-menu-item"
+                          onClick={() => {
+                            setOpenMenuRfqId(null);
+                            onDuplicateRFQ(rfq);
+                          }}
+                        >
+                          <Copy size={13} className="rfq-icon-indigo" />
+                          <span>Duplicate RFQ</span>
+                        </button>
+                        {!rfq.isLocked ? (
+                          <button
+                            type="button"
+                            className="rfq-card-menu-item"
+                            onClick={() => {
+                              setOpenMenuRfqId(null);
+                              onEditDraft(rfq);
+                            }}
+                          >
+                            <Edit3 size={13} />
+                            <span>Continue Editing</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="rfq-card-menu-item"
+                            onClick={() => {
+                              setOpenMenuRfqId(null);
+                              onViewRFQ(rfq);
+                            }}
+                          >
+                            <Eye size={13} />
+                            <span>View RFQ Details</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -451,7 +523,53 @@ export const RFQLandingHome: React.FC<RFQLandingHomeProps> = ({
                   <span className="rfq-dashboard-card__num">{rfq.rfqNumber}</span>
                   <span className="rfq-dashboard-card__category">{rfq.category}</span>
                 </div>
-                {getStatusBadge(rfq)}
+                <div className="rfq-dashboard-card__badges-group">
+                  {getStatusBadge(rfq)}
+                  <div className="rfq-card-menu-wrap">
+                    <button
+                      type="button"
+                      className="rfq-card-menu-btn"
+                      title="More actions"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuRfqId(openMenuRfqId === rfq.id ? null : rfq.id);
+                      }}
+                      aria-label="More actions"
+                    >
+                      <MoreVertical size={15} />
+                    </button>
+
+                    {openMenuRfqId === rfq.id && (
+                      <div
+                        className="rfq-card-menu-dropdown"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="rfq-card-menu-item"
+                          onClick={() => {
+                            setOpenMenuRfqId(null);
+                            onDuplicateRFQ(rfq);
+                          }}
+                        >
+                          <Copy size={13} className="rfq-icon-indigo" />
+                          <span>Duplicate RFQ</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="rfq-card-menu-item"
+                          onClick={() => {
+                            setOpenMenuRfqId(null);
+                            onViewRFQ(rfq);
+                          }}
+                        >
+                          <Eye size={13} />
+                          <span>View RFQ &amp; Historical Record</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="rfq-dashboard-card__body">

@@ -13,6 +13,12 @@ import {
   Package,
   ArrowLeft,
   CheckCircle2,
+  Paperclip,
+  Download,
+  Eye,
+  FileSpreadsheet,
+  FileArchive,
+  FileCode,
 } from 'lucide-react';
 
 interface VendorQuotationModalProps {
@@ -22,6 +28,18 @@ interface VendorQuotationModalProps {
   onApprove?: () => void;
   onClose: () => void;
 }
+
+const getAttachmentIcon = (name = '', type = '') => {
+  const ext = (type || name.split('.').pop() || '').toLowerCase();
+  if (['xls', 'xlsx', 'csv'].includes(ext)) {
+    return <FileSpreadsheet size={16} className="rfq-icon-green" />;
+  }
+  if (['zip', 'rar', '7z', 'tar'].includes(ext)) {
+    return <FileArchive size={16} className="rfq-icon-amber" />;
+  }
+  return <FileText size={16} className="rfq-icon-indigo" />;
+};
+
 
 export const VendorQuotationModal: React.FC<VendorQuotationModalProps> = ({
   isOpen,
@@ -175,6 +193,49 @@ export const VendorQuotationModal: React.FC<VendorQuotationModalProps> = ({
               <h4 className="rfq-quotation-card__title">Vendor Remarks &amp; Technical Notes</h4>
               <div className="rfq-quotation-notes-box">
                 <p>{quotation.vendorComments}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Supporting Attachments & Scope Documents */}
+          {quotation.attachments && quotation.attachments.length > 0 && (
+            <div className="rfq-quotation-section">
+              <div className="rfq-quotation-section__header">
+                <Paperclip size={16} className="rfq-icon-indigo" />
+                <h4 className="rfq-quotation-section__title">
+                  Supporting Attachments &amp; Scope Documents ({quotation.attachments.length})
+                </h4>
+              </div>
+
+              <div className="rfq-quotation-attachments-grid">
+                {quotation.attachments.map((att) => (
+                  <div key={att.id} className="rfq-quotation-attachment-card">
+                    <div className="rfq-quotation-attachment-left">
+                      <div className="rfq-quotation-attachment-icon">
+                        {getAttachmentIcon(att.name, att.type)}
+                      </div>
+                      <div className="rfq-quotation-attachment-info">
+                        <span className="rfq-quotation-attachment-name" title={att.name}>
+                          {att.name}
+                        </span>
+                        <span className="rfq-quotation-attachment-size">{att.size}</span>
+                      </div>
+                    </div>
+
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        alert(`Downloading / viewing supporting document: ${att.name}`);
+                      }}
+                      className="rfq-btn rfq-btn--xs rfq-btn--outline rfq-attachment-view-btn"
+                      title={`View ${att.name}`}
+                    >
+                      <Download size={12} />
+                      <span>Download</span>
+                    </a>
+                  </div>
+                ))}
               </div>
             </div>
           )}

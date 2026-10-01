@@ -21,7 +21,7 @@ import RFQDetailView from '../components/rfq/RFQDetailView';
 import VendorQuotationModal from '../components/rfq/VendorQuotationModal';
 import RFQAddNewItemModal from '../components/rfq/RFQAddNewItemModal';
 import RFQAddNewVendorModal from '../components/rfq/RFQAddNewVendorModal';
-import { ArrowLeft, Building2, Package, Lock } from 'lucide-react';
+import { ArrowLeft, Building2, Package, Lock, Copy } from 'lucide-react';
 
 export const RFQPage: React.FC = () => {
   // Page mode: 'landing' | 'builder' (4-step wizard) | 'detail' (read-only sent RFQ)
@@ -32,6 +32,7 @@ export const RFQPage: React.FC = () => {
 
   const [currentStep, setCurrentStep] = useState<RFQStep>(1);
   const [completedSteps, setCompletedSteps] = useState<RFQStep[]>([]);
+  const [duplicatedFromRFQ, setDuplicatedFromRFQ] = useState<string | null>(null);
 
   // Company / Legal Entity Context (Context for the entire RFQ workspace)
   const [selectedCompany, setSelectedCompany] = useState<string>(
@@ -57,6 +58,7 @@ export const RFQPage: React.FC = () => {
   // Initial State: Start clean with 0 Products and 0 Vendors for newly created RFQs
   const [selectedItems, setSelectedItems] = useState<RFQItemSelection[]>([]);
   const [selectedVendors, setSelectedVendors] = useState<Vendor[]>([]);
+
 
   // Mark step complete when advancing
   const markStepComplete = (step: RFQStep) => {
@@ -182,6 +184,7 @@ export const RFQPage: React.FC = () => {
     setSubmissionResult(null);
     setSelectedItems([]);
     setSelectedVendors([]);
+    setDuplicatedFromRFQ(null);
     setViewMode('landing');
   };
 
@@ -221,6 +224,71 @@ export const RFQPage: React.FC = () => {
       setSelectedItems([]);
     }
     setSelectedVendors([]);
+    setDuplicatedFromRFQ(null);
+    setCurrentStep(1);
+    setCompletedSteps([]);
+    setSubmissionResult(null);
+    setViewMode('builder');
+  };
+
+  const handleDuplicateRFQ = (sourceRFQ: RFQRecord) => {
+    // 1. Copy Legal Entity / Company
+    if (sourceRFQ.company) {
+      setSelectedCompany(sourceRFQ.company);
+    }
+
+    // 2. Deep-copy line items, quantities, and specifications
+    if (sourceRFQ.itemsDetail && sourceRFQ.itemsDetail.length > 0) {
+      const clonedItems: RFQItemSelection[] = sourceRFQ.itemsDetail.map((sel) => ({
+        item: { ...sel.item },
+        quantity: sel.quantity,
+        specifications: sel.specifications.map((s) => ({ ...s })),
+        aiEnriched: sel.aiEnriched,
+      }));
+      setSelectedItems(clonedItems);
+    } else {
+      // Fallback matching from mock catalog if itemsDetail was omitted
+      const matched = mockCatalogItems.filter(
+        (it) =>
+          sourceRFQ.itemsSummary.toLowerCase().includes(it.name.toLowerCase()) ||
+          sourceRFQ.category.toLowerCase().includes(it.category.split('/')[0].trim().toLowerCase())
+      );
+      if (matched.length > 0) {
+        setSelectedItems(
+          matched.map((item) => ({
+            item,
+            quantity: sourceRFQ.totalQuantity || item.defaultQuantity,
+            specifications: [...item.baseSpecs],
+            aiEnriched: false,
+          }))
+        );
+      } else {
+        setSelectedItems([
+          {
+            item: mockCatalogItems[0],
+            quantity: sourceRFQ.totalQuantity || 10,
+            specifications: [...mockCatalogItems[0].baseSpecs],
+            aiEnriched: false,
+          },
+        ]);
+      }
+    }
+
+    // 3. DO NOT copy previous vendor recipients or quotations/statuses
+    setSelectedVendors([]);
+
+    // 4. Copy delivery location and procurement notes / remarks
+    if (sourceRFQ.deliveryLocation) {
+      setDeliveryLocation(sourceRFQ.deliveryLocation);
+    }
+    if (sourceRFQ.notes) {
+      setNotes(sourceRFQ.notes);
+    }
+
+    // 5. Retain reference to source RFQ
+    setDuplicatedFromRFQ(sourceRFQ.rfqNumber);
+
+    // 6. Reset submission state and open builder at Step 1 (Draft)
     setCurrentStep(1);
     setCompletedSteps([]);
     setSubmissionResult(null);
@@ -234,6 +302,7 @@ export const RFQPage: React.FC = () => {
         <RFQDetailView
           rfq={activeDetailRFQ}
           onBackToHub={() => setViewMode('landing')}
+          onDuplicateRFQ={handleDuplicateRFQ}
         />
       </div>
     );
@@ -252,10 +321,12 @@ export const RFQPage: React.FC = () => {
             setSubmissionResult(null);
             setSelectedItems([]);
             setSelectedVendors([]);
+            setDuplicatedFromRFQ(null);
             setViewMode('builder');
           }}
           onViewRFQ={handleViewRFQ}
           onEditDraft={handleEditDraft}
+          onDuplicateRFQ={handleDuplicateRFQ}
         />
       </div>
     );
@@ -264,6 +335,16 @@ export const RFQPage: React.FC = () => {
   // Builder Mode: 4-Step RFQ Creation with Sticky Bottom Stepper
   return (
     <div className="rfq-page-wrapper rfq-page-wrapper--builder">
+      {/* Compact Draft Duplication Context Banner if applicable */}
+      {duplicatedFromRFQ && (
+        <div className="rfq-duplicated-source-banner">
+          <Copy size={13} className="rfq-icon-indigo" />
+          <span>
+            New draft RFQ duplicated from <strong>{duplicatedFromRFQ}</strong>. Specifications and commercial terms have been copied. Previous vendor recipients and responses were not copied.
+          </span>
+        </div>
+      )}
+
       {/* Main Step Workspace */}
       <main className="rfq-main-content rfq-main-content--with-bottom-bar">
         {currentStep === 1 && (
