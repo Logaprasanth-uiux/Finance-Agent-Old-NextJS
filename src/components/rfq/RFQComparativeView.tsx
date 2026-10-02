@@ -844,6 +844,98 @@ export const RFQComparativeView: React.FC<RFQComparativeViewProps> = ({
         </div>
       </div>
 
+      {/* 3B. Vendor Added Specifications Section */}
+      <div className="rfq-comparative-vendor-added-card">
+        <div className="rfq-comparative-matrix-header">
+          <div className="rfq-comp-section-title-wrap">
+            <h3 className="rfq-comp-section-title">
+              <Sparkles size={17} className="rfq-icon-amber" />
+              <span>Vendor Added Specifications</span>
+            </h3>
+            <span className="rfq-comp-count-badge rfq-comp-count-badge--amber">
+              Supplemental Vendor Information
+            </span>
+          </div>
+          <p className="rfq-comp-section-sub">
+            Additional information provided by vendors beyond the original buyer requirements.
+          </p>
+        </div>
+
+        <div className="rfq-vendor-added-grid-wrap">
+          <div
+            className="rfq-vendor-added-grid"
+            style={{
+              gridTemplateColumns: `repeat(${availableVendors.length}, minmax(260px, 1fr))`,
+            }}
+          >
+            {availableVendors.map((vendorName) => {
+              const commQuote = mockLaptopCommercialQuotations[vendorName];
+              const vrQuote = vendorResponses.find(
+                (vr) => vr.vendorName.toLowerCase() === vendorName.toLowerCase()
+              )?.quotation;
+
+              const rawAddedSpecs =
+                commQuote?.vendorAddedSpecs && commQuote.vendorAddedSpecs.length > 0
+                  ? commQuote.vendorAddedSpecs
+                  : vrQuote?.vendorAddedSpecs && vrQuote.vendorAddedSpecs.length > 0
+                  ? vrQuote.vendorAddedSpecs
+                  : vrQuote?.quotedItems?.flatMap((qi) => qi.vendorAddedSpecs || []) || [];
+
+              const addedSpecs = rawAddedSpecs.filter(
+                (s) => s.specName.trim() || s.specValue.trim()
+              );
+
+              return (
+                <div key={vendorName} className="rfq-vendor-added-col">
+                  <div className="rfq-vendor-added-col__header">
+                    <div
+                      className="rfq-vendor-avatar-sm"
+                      style={{ backgroundColor: commQuote?.logoColor || '#4F46E5' }}
+                    >
+                      {commQuote?.logoInitial || vendorName.charAt(0)}
+                    </div>
+                    <div className="rfq-vendor-added-col__info">
+                      <h4 className="rfq-vendor-added-col__name">{vendorName}</h4>
+                      <span className="rfq-vendor-added-col__loc">
+                        {commQuote?.location || 'India'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rfq-vendor-added-col__body">
+                    {addedSpecs.length > 0 ? (
+                      <div className="rfq-vendor-added-items-stack">
+                        {addedSpecs.map((spec) => (
+                          <div key={spec.id} className="rfq-vendor-added-spec-card">
+                            <div className="rfq-vendor-added-spec-card__top">
+                              <span className="rfq-vendor-added-badge">
+                                VENDOR ADDED
+                              </span>
+                            </div>
+                            <strong className="rfq-vendor-added-spec-name">
+                              {spec.specName}
+                            </strong>
+                            <p className="rfq-vendor-added-spec-value">
+                              {spec.specValue}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rfq-vendor-added-empty-state">
+                        <span className="rfq-vendor-added-empty-text">
+                          No additional specifications provided
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* 4. Commercial Comparison Section */}
       <div className="rfq-comparative-commercial-card">
         <div className="rfq-commercial-header">

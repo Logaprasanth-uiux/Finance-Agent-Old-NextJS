@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { RFQRecord, VendorQuotation, VendorResponse } from '../../types/rfq';
 import VendorQuotationModal from './VendorQuotationModal';
 import RFQComparativeView from './RFQComparativeView';
@@ -45,10 +45,74 @@ export const RFQDetailView: React.FC<RFQDetailViewProps> = ({
   const [activeTab, setActiveTab] = useState<'quotes' | 'comparative' | 'scope'>('quotes');
   const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(0);
   
-  // Local state for vendor responses to enable interactive quotation approval
-  const [vendorResponses, setVendorResponses] = useState<VendorResponse[]>(
-    rfq.vendorResponses || []
-  );
+  // Local state for vendor responses to enable interactive quotation approval & sync with Vendor Portal submissions
+  const [vendorResponses, setVendorResponses] = useState<VendorResponse[]>(() => {
+    let list = rfq.vendorResponses ? [...rfq.vendorResponses] : [];
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`vp_quote_${rfq.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved) as VendorQuotation;
+          const idx = list.findIndex(
+            (vr) =>
+              vr.vendorName.toLowerCase().includes('acme global') ||
+              vr.vendorName.toLowerCase().includes(parsed.vendorName.toLowerCase())
+          );
+          const customResp: VendorResponse = {
+            vendorId: parsed.vendorId || 'v-1',
+            vendorName: parsed.vendorName || 'Acme Global',
+            status: 'Quotation Received',
+            quotationValue: parsed.totalAmount,
+            submittedDate: parsed.submittedDate,
+            submittedTime: parsed.submittedTime,
+            quotation: parsed,
+          };
+          if (idx >= 0) {
+            list[idx] = customResp;
+          } else {
+            list = [customResp, ...list];
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return list;
+  });
+
+  useEffect(() => {
+    let list = rfq.vendorResponses ? [...rfq.vendorResponses] : [];
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`vp_quote_${rfq.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved) as VendorQuotation;
+          const idx = list.findIndex(
+            (vr) =>
+              vr.vendorName.toLowerCase().includes('acme global') ||
+              vr.vendorName.toLowerCase().includes(parsed.vendorName.toLowerCase())
+          );
+          const customResp: VendorResponse = {
+            vendorId: parsed.vendorId || 'v-1',
+            vendorName: parsed.vendorName || 'Acme Global',
+            status: 'Quotation Received',
+            quotationValue: parsed.totalAmount,
+            submittedDate: parsed.submittedDate,
+            submittedTime: parsed.submittedTime,
+            quotation: parsed,
+          };
+          if (idx >= 0) {
+            list[idx] = customResp;
+          } else {
+            list = [customResp, ...list];
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    setVendorResponses(list);
+  }, [rfq]);
   
   // Confirmation Modal State for approving a quotation
   const [confirmApproveTarget, setConfirmApproveTarget] =

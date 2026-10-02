@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, use, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import type { RFQRecord, ItemSpecification, QuotedItem, VendorQuotation, VendorResponse, VendorAttachment } from '@/types/rfq';
+import type { RFQRecord, ItemSpecification, QuotedItem, VendorQuotation, VendorResponse, VendorAttachment, VendorAddedSpec } from '@/types/rfq';
 import { mockCompanyRFQs, mockCatalogItems } from '@/data/rfqMockData';
 import {
   ArrowLeft,
@@ -32,6 +32,8 @@ import {
   FileArchive,
   Download,
   FileText,
+  Trash2,
+  Sparkles,
 } from 'lucide-react';
 
 const CURRENT_VENDOR_NAME = 'Acme Global';
@@ -235,6 +237,102 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
       },
     ];
   });
+
+  // Vendor Added Specifications State: Record<itemId, VendorAddedSpec[]>
+  const [vendorAddedSpecs, setVendorAddedSpecs] = useState<
+    Record<string, VendorAddedSpec[]>
+  >(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`vp_quote_${rfqId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved) as VendorQuotation;
+          const specsMap: Record<string, VendorAddedSpec[]> = {};
+          if (parsed.quotedItems) {
+            parsed.quotedItems.forEach((qi) => {
+              if (qi.vendorAddedSpecs && qi.vendorAddedSpecs.length > 0) {
+                specsMap[qi.itemId] = qi.vendorAddedSpecs;
+              }
+            });
+          }
+          if (parsed.vendorAddedSpecs && parsed.vendorAddedSpecs.length > 0) {
+            parsed.vendorAddedSpecs.forEach((s) => {
+              const iId = s.itemId || itemsDetail[0]?.item.id || 'default';
+              if (!specsMap[iId]) specsMap[iId] = [];
+              if (!specsMap[iId].some((existing) => existing.id === s.id)) {
+                specsMap[iId].push(s);
+              }
+            });
+          }
+          if (Object.keys(specsMap).length > 0) {
+            return specsMap;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    if (existingVendorResponse?.quotation) {
+      const q = existingVendorResponse.quotation;
+      const specsMap: Record<string, VendorAddedSpec[]> = {};
+      if (q.quotedItems) {
+        q.quotedItems.forEach((qi) => {
+          if (qi.vendorAddedSpecs && qi.vendorAddedSpecs.length > 0) {
+            specsMap[qi.itemId] = qi.vendorAddedSpecs;
+          }
+        });
+      }
+      if (q.vendorAddedSpecs && q.vendorAddedSpecs.length > 0) {
+        q.vendorAddedSpecs.forEach((s) => {
+          const iId = s.itemId || itemsDetail[0]?.item.id || 'default';
+          if (!specsMap[iId]) specsMap[iId] = [];
+          if (!specsMap[iId].some((existing) => existing.id === s.id)) {
+            specsMap[iId].push(s);
+          }
+        });
+      }
+      if (Object.keys(specsMap).length > 0) {
+        return specsMap;
+      }
+    }
+
+    return {};
+  });
+
+  const handleAddVendorSpec = (itemId: string) => {
+    const newSpec: VendorAddedSpec = {
+      id: `vas-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      itemId,
+      specName: '',
+      specValue: '',
+    };
+    setVendorAddedSpecs((prev) => ({
+      ...prev,
+      [itemId]: [...(prev[itemId] || []), newSpec],
+    }));
+  };
+
+  const handleUpdateVendorAddedSpec = (
+    itemId: string,
+    specId: string,
+    field: 'specName' | 'specValue',
+    value: string
+  ) => {
+    setVendorAddedSpecs((prev) => ({
+      ...prev,
+      [itemId]: (prev[itemId] || []).map((s) =>
+        s.id === specId ? { ...s, [field]: value } : s
+      ),
+    }));
+  };
+
+  const handleRemoveVendorAddedSpec = (itemId: string, specId: string) => {
+    setVendorAddedSpecs((prev) => ({
+      ...prev,
+      [itemId]: (prev[itemId] || []).filter((s) => s.id !== specId),
+    }));
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const reviewFileInputRef = useRef<HTMLInputElement>(null);
@@ -494,6 +592,9 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
           const taxable = uPrice * itemSel.quantity;
           const gAmount = Math.round(taxable * gRate);
           const totalWithTax = taxable + gAmount;
+          const itemAdded = (vendorAddedSpecs[itemSel.item.id] || []).filter(
+            (s) => s.specName.trim() || s.specValue.trim()
+          );
 
           return {
             itemId: itemSel.item.id,
@@ -503,6 +604,7 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
             unit: itemSel.item.unit,
             unitPrice: uPrice,
             lineTotal: totalWithTax,
+            vendorAddedSpecs: itemAdded,
           };
         }),
         subtotal: financialTotals.subtotal,
@@ -519,6 +621,11 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
           size: a.size,
           type: a.type,
         })),
+        vendorAddedSpecs: Object.entries(vendorAddedSpecs).flatMap(([itemId, specs]) =>
+          specs
+            .filter((s) => s.specName.trim() || s.specValue.trim())
+            .map((s) => ({ ...s, itemId }))
+        ),
       };
 
       // 1. Update in-memory mockCompanyRFQs
@@ -970,6 +1077,87 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                               })}
                             </tbody>
                           </table>
+                        </div>
+
+                        {/* Vendor Added Specifications Section for this Item */}
+                        <div className="vp-vendor-added-section">
+                          <div className="vp-vendor-added-section-header">
+                            <span className="rfq-vendor-added-badge">VENDOR ADDED</span>
+                            <span className="vp-vendor-added-section-title">
+                              Additional Specifications (Supplemental)
+                            </span>
+                          </div>
+
+                          {((vendorAddedSpecs[itemSel.item.id] || []).length > 0) && (
+                            <div className="vp-vendor-added-list">
+                              {(vendorAddedSpecs[itemSel.item.id] || []).map((vas) => (
+                                <div key={vas.id} className="vp-vendor-added-entry-card">
+                                  <div className="vp-vendor-added-entry-fields">
+                                    <div className="vp-vendor-added-field">
+                                      <label className="vp-vendor-added-field__label">
+                                        Specification Name
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={vas.specName}
+                                        onChange={(e) =>
+                                          handleUpdateVendorAddedSpec(
+                                            itemSel.item.id,
+                                            vas.id,
+                                            'specName',
+                                            e.target.value
+                                          )
+                                        }
+                                        placeholder="e.g. Additional RAM, Extended Cooling..."
+                                        className="vp-vendor-added-input vp-vendor-added-input--name"
+                                      />
+                                    </div>
+                                    <div className="vp-vendor-added-field vp-vendor-added-field--val">
+                                      <label className="vp-vendor-added-field__label">
+                                        Vendor Detail
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={vas.specValue}
+                                        onChange={(e) =>
+                                          handleUpdateVendorAddedSpec(
+                                            itemSel.item.id,
+                                            vas.id,
+                                            'specValue',
+                                            e.target.value
+                                          )
+                                        }
+                                        placeholder="e.g. 32 GB DDR5 ECC RAM, expandable to 64 GB"
+                                        className="vp-vendor-added-input vp-vendor-added-input--val"
+                                      />
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleRemoveVendorAddedSpec(itemSel.item.id, vas.id)
+                                    }
+                                    className="vp-vendor-added-remove-btn"
+                                    title="Remove additional specification"
+                                  >
+                                    <Trash2 size={13} />
+                                    <span>Remove</span>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="vp-vendor-added-actions">
+                            <button
+                              type="button"
+                              onClick={() => handleAddVendorSpec(itemSel.item.id)}
+                              className="vp-add-spec-btn"
+                            >
+                              <Plus size={14} />
+                              <span>Add Additional Specification</span>
+                            </button>
+                          </div>
                         </div>
 
                         {/* Per-Item Pricing & Independent GST Selection */}
@@ -1431,6 +1619,87 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                       </table>
                     </div>
 
+                    {/* Vendor Added Specifications in Review Inline Edit Mode */}
+                    <div className="vp-vendor-added-section">
+                      <div className="vp-vendor-added-section-header">
+                        <span className="rfq-vendor-added-badge">VENDOR ADDED</span>
+                        <span className="vp-vendor-added-section-title">
+                          Additional Specifications (Supplemental)
+                        </span>
+                      </div>
+
+                      {((vendorAddedSpecs[itemSel.item.id] || []).length > 0) && (
+                        <div className="vp-vendor-added-list">
+                          {(vendorAddedSpecs[itemSel.item.id] || []).map((vas) => (
+                            <div key={vas.id} className="vp-vendor-added-entry-card">
+                              <div className="vp-vendor-added-entry-fields">
+                                <div className="vp-vendor-added-field">
+                                  <label className="vp-vendor-added-field__label">
+                                    Specification Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={vas.specName}
+                                    onChange={(e) =>
+                                      handleUpdateVendorAddedSpec(
+                                        itemSel.item.id,
+                                        vas.id,
+                                        'specName',
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g. Additional RAM, Extended Cooling..."
+                                    className="vp-vendor-added-input vp-vendor-added-input--name"
+                                  />
+                                </div>
+                                <div className="vp-vendor-added-field vp-vendor-added-field--val">
+                                  <label className="vp-vendor-added-field__label">
+                                    Vendor Detail
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={vas.specValue}
+                                    onChange={(e) =>
+                                      handleUpdateVendorAddedSpec(
+                                        itemSel.item.id,
+                                        vas.id,
+                                        'specValue',
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g. 32 GB DDR5 ECC RAM, expandable to 64 GB"
+                                    className="vp-vendor-added-input vp-vendor-added-input--val"
+                                  />
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleRemoveVendorAddedSpec(itemSel.item.id, vas.id)
+                                }
+                                className="vp-vendor-added-remove-btn"
+                                title="Remove additional specification"
+                              >
+                                <Trash2 size={13} />
+                                <span>Remove</span>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="vp-vendor-added-actions">
+                        <button
+                          type="button"
+                          onClick={() => handleAddVendorSpec(itemSel.item.id)}
+                          className="vp-add-spec-btn"
+                        >
+                          <Plus size={14} />
+                          <span>Add Additional Specification</span>
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Per-Item Pricing & GST Selection In Review */}
                     <div className="vp-pricing-box">
                       <div className="vp-pricing-field">
@@ -1497,56 +1766,87 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                   </>
                 ) : (
                   /* READ-ONLY SUMMARY FOR THIS ITEM IN REVIEW */
-                  <div className="vp-specs-table-container">
-                    <table className="vp-specs-table">
-                      <thead>
-                        <tr>
-                          <th style={{ width: '25%' }}>Specification</th>
-                          <th style={{ width: '35%' }}>Buyer Requirement (Read-Only)</th>
-                          <th style={{ width: '40%' }}>Vendor Quoted Specification</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {itemSel.specifications.map((spec) => {
-                          const vSpec = vendorSpecs[itemSel.item.id]?.[spec.id] || {
-                            vendorValue: spec.value,
-                            note: '',
-                          };
+                  <>
+                    <div className="vp-specs-table-container">
+                      <table className="vp-specs-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '25%' }}>Specification</th>
+                            <th style={{ width: '35%' }}>Buyer Requirement (Read-Only)</th>
+                            <th style={{ width: '40%' }}>Vendor Quoted Specification</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {itemSel.specifications.map((spec) => {
+                            const vSpec = vendorSpecs[itemSel.item.id]?.[spec.id] || {
+                              vendorValue: spec.value,
+                              note: '',
+                            };
 
-                          const isDifferent = vSpec.vendorValue !== spec.value;
+                            const isDifferent = vSpec.vendorValue !== spec.value;
 
-                          return (
-                            <tr key={spec.id}>
-                              <td className="vp-spec-key-col">{spec.key}</td>
-                              <td className="vp-spec-buyer-col">
-                                <span className="vp-buyer-spec-text">
-                                  <Lock size={12} color="#94A3B8" />
-                                  {spec.value}
-                                </span>
-                              </td>
-                              <td className="vp-spec-vendor-col">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                  <strong style={{ color: isDifferent ? '#4F46E5' : '#0F172A' }}>
-                                    {vSpec.vendorValue || spec.value}
-                                  </strong>
-                                  {isDifferent && (
-                                    <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 700, background: '#EEF2FF', padding: '0.1rem 0.45rem', borderRadius: '4px', border: '1px solid #C7D2FE' }}>
-                                      Vendor Alternate
-                                    </span>
-                                  )}
-                                </div>
-                                {vSpec.note && (
-                                  <div className="vp-spec-note-saved-pill" style={{ marginTop: '0.35rem' }}>
-                                    <span>Note: {vSpec.note}</span>
+                            return (
+                              <tr key={spec.id}>
+                                <td className="vp-spec-key-col">{spec.key}</td>
+                                <td className="vp-spec-buyer-col">
+                                  <span className="vp-buyer-spec-text">
+                                    <Lock size={12} color="#94A3B8" />
+                                    {spec.value}
+                                  </span>
+                                </td>
+                                <td className="vp-spec-vendor-col">
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                    <strong style={{ color: isDifferent ? '#4F46E5' : '#0F172A' }}>
+                                      {vSpec.vendorValue || spec.value}
+                                    </strong>
+                                    {isDifferent && (
+                                      <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 700, background: '#EEF2FF', padding: '0.1rem 0.45rem', borderRadius: '4px', border: '1px solid #C7D2FE' }}>
+                                        Vendor Alternate
+                                      </span>
+                                    )}
                                   </div>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                  {vSpec.note && (
+                                    <div className="vp-spec-note-saved-pill" style={{ marginTop: '0.35rem' }}>
+                                      <span>Note: {vSpec.note}</span>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Vendor Added Specifications Read-Only in Review Mode */}
+                    {((vendorAddedSpecs[itemSel.item.id] || []).filter(
+                      (s) => s.specName.trim() || s.specValue.trim()
+                    ).length > 0) && (
+                      <div className="vp-vendor-added-review-summary">
+                        <div className="vp-vendor-added-review-header">
+                          <span className="rfq-vendor-added-badge">VENDOR ADDED</span>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E' }}>
+                            Vendor Added Specifications ({(vendorAddedSpecs[itemSel.item.id] || []).filter((s) => s.specName.trim() || s.specValue.trim()).length})
+                          </span>
+                        </div>
+                        <div className="vp-vendor-added-review-grid">
+                          {(vendorAddedSpecs[itemSel.item.id] || [])
+                            .filter((s) => s.specName.trim() || s.specValue.trim())
+                            .map((vas) => (
+                              <div key={vas.id} className="vp-vendor-added-review-item">
+                                <span className="rfq-vendor-added-badge">VENDOR ADDED</span>
+                                <strong className="vp-vendor-added-review-title">
+                                  {vas.specName || 'Additional Specification'}
+                                </strong>
+                                <p className="vp-vendor-added-review-value">
+                                  {vas.specValue || '—'}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             );
@@ -1899,6 +2199,35 @@ export default function VendorRFQDetailPage({ params }: PageProps) {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Vendor Added Specifications Read-Only in Submitted Mode */}
+                {((vendorAddedSpecs[itemSel.item.id] || []).filter(
+                  (s) => s.specName.trim() || s.specValue.trim()
+                ).length > 0) && (
+                  <div className="vp-vendor-added-review-summary" style={{ marginTop: '0.85rem' }}>
+                    <div className="vp-vendor-added-review-header">
+                      <span className="rfq-vendor-added-badge">VENDOR ADDED</span>
+                      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E' }}>
+                        Vendor Added Specifications ({(vendorAddedSpecs[itemSel.item.id] || []).filter((s) => s.specName.trim() || s.specValue.trim()).length})
+                      </span>
+                    </div>
+                    <div className="vp-vendor-added-review-grid">
+                      {(vendorAddedSpecs[itemSel.item.id] || [])
+                        .filter((s) => s.specName.trim() || s.specValue.trim())
+                        .map((vas) => (
+                          <div key={vas.id} className="vp-vendor-added-review-item">
+                            <span className="rfq-vendor-added-badge">VENDOR ADDED</span>
+                            <strong className="vp-vendor-added-review-title">
+                              {vas.specName || 'Additional Specification'}
+                            </strong>
+                            <p className="vp-vendor-added-review-value">
+                              {vas.specValue || '—'}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

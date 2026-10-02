@@ -790,6 +790,18 @@ export const mockVendorQuotation_AcmeGlobal: VendorQuotation = {
       type: 'docx',
     },
   ],
+  vendorAddedSpecs: [
+    {
+      id: 'ag-vas-1',
+      specName: 'Additional RAM',
+      specValue: '32 GB DDR5 ECC RAM, expandable to 64 GB',
+    },
+    {
+      id: 'ag-vas-2',
+      specName: 'Additional Cooling',
+      specValue: 'Enhanced cooling module included',
+    },
+  ],
 };
 
 export const mockVendorQuotation_ApexRetail: VendorQuotation = {
@@ -913,6 +925,18 @@ export const mockVendorQuotation_PrimeAssemblies: VendorQuotation = {
       type: 'pdf',
     },
   ],
+  vendorAddedSpecs: [
+    {
+      id: 'pa-add-1',
+      specName: 'Additional RAM',
+      specValue: '32 GB DDR5 ECC RAM, expandable to 64 GB',
+    },
+    {
+      id: 'pa-add-2',
+      specName: 'Additional Cooling',
+      specValue: 'Enhanced cooling module included',
+    },
+  ],
 };
 
 export const mockVendorQuotation_ABCDigital: VendorQuotation = {
@@ -947,6 +971,13 @@ export const mockVendorQuotation_ABCDigital: VendorQuotation = {
       name: 'ABC_Digital_Storage_Upgrade_Scope.docx',
       size: '640 KB',
       type: 'docx',
+    },
+  ],
+  vendorAddedSpecs: [
+    {
+      id: 'abc-add-1',
+      specName: 'Extended Warranty',
+      specValue: '5-year coverage included with on-site technician dispatch',
     },
   ],
 };

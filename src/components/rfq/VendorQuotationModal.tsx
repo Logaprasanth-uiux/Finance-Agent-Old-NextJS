@@ -19,6 +19,7 @@ import {
   FileSpreadsheet,
   FileArchive,
   FileCode,
+  Sparkles,
 } from 'lucide-react';
 
 interface VendorQuotationModalProps {
@@ -49,6 +50,11 @@ export const VendorQuotationModal: React.FC<VendorQuotationModalProps> = ({
   onClose,
 }) => {
   if (!isOpen || !quotation) return null;
+
+  const vendorAddedSpecs =
+    quotation.vendorAddedSpecs && quotation.vendorAddedSpecs.length > 0
+      ? quotation.vendorAddedSpecs
+      : quotation.quotedItems?.flatMap((qi) => qi.vendorAddedSpecs || []) || [];
 
   return (
     <div className="rfq-modal-backdrop" onClick={onClose}>
@@ -136,6 +142,35 @@ export const VendorQuotationModal: React.FC<VendorQuotationModalProps> = ({
               </table>
             </div>
           </div>
+
+          {/* Vendor Added Specifications Section */}
+          {vendorAddedSpecs.length > 0 && (
+            <div className="rfq-quotation-section">
+              <div className="rfq-quotation-section__header">
+                <Sparkles size={16} className="rfq-icon-amber" />
+                <h4 className="rfq-quotation-section__title">Vendor Added Specifications</h4>
+              </div>
+              <p className="rfq-quotation-section__sub">
+                Additional details voluntarily provided by the vendor beyond the original buyer requirements.
+              </p>
+
+              <div className="rfq-vendor-added-modal-grid">
+                {vendorAddedSpecs.map((spec) => (
+                  <div key={spec.id} className="rfq-vendor-added-modal-card">
+                    <div className="rfq-vendor-added-modal-card__header">
+                      <span className="rfq-vendor-added-badge">
+                        VENDOR ADDED
+                      </span>
+                      <strong className="rfq-vendor-added-modal-card__name">
+                        {spec.specName}
+                      </strong>
+                    </div>
+                    <p className="rfq-vendor-added-modal-card__value">{spec.specValue}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Commercial Terms & Pricing Summary Grid */}
           <div className="rfq-quotation-grid">

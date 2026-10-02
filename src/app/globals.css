@@ -13939,6 +13939,373 @@ body {
   flex-shrink: 0;
 }
 
+/* ==========================================================================
+   Vendor Added Specifications — Common & Dedicated Styles
+   ========================================================================== */
+
+/* Unified Subtle Amber/Orange Badge */
+.rfq-vendor-added-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #B45309;
+  background-color: #FEF3C7;
+  border: 1px solid #FDE68A;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+.rfq-comp-count-badge--amber {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+/* Vendor Portal: Additional Specification Entry Section */
+.vp-vendor-added-section {
+  padding: 1rem 1.25rem;
+  background: #FAFBFD;
+  border-top: 1px solid #EEF2F6;
+  border-bottom: 1px solid #EEF2F6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.vp-vendor-added-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vp-vendor-added-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.vp-vendor-added-section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.vp-vendor-added-entry-card {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #F59E0B;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.vp-vendor-added-entry-fields {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .vp-vendor-added-entry-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vp-vendor-added-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.vp-vendor-added-field__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.vp-vendor-added-input {
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.82rem;
+  color: #0F172A;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.vp-vendor-added-input:focus {
+  background: #FFFFFF;
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+}
+
+.vp-vendor-added-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #EF4444;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 34px;
+}
+
+.vp-vendor-added-remove-btn:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+  border-color: #FCA5A5;
+}
+
+.vp-vendor-added-actions {
+  display: flex;
+  align-items: center;
+}
+
+.vp-add-spec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #B45309;
+  background: #FFFBEB;
+  border: 1px dashed #FCD34D;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.vp-add-spec-btn:hover {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #92400E;
+  transform: translateY(-1px);
+}
+
+/* Vendor Portal: Review & Submitted Read-Only Display */
+.vp-vendor-added-review-summary {
+  padding: 0.85rem 1rem;
+  background: #FFFDF8;
+  border: 1px solid #FEF3C7;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.vp-vendor-added-review-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.vp-vendor-added-review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.65rem;
+}
+
+.vp-vendor-added-review-item {
+  padding: 0.65rem 0.8rem;
+  background: #FFFFFF;
+  border: 1px solid #FDE68A;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.vp-vendor-added-review-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.vp-vendor-added-review-value {
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* Buyer Modal: Vendor Added Specifications */
+.rfq-vendor-added-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.rfq-vendor-added-modal-card {
+  padding: 0.85rem 1rem;
+  background: #FFFDF5;
+  border: 1px solid #FDE68A;
+  border-left: 3px solid #F59E0B;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rfq-vendor-added-modal-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rfq-vendor-added-modal-card__name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.rfq-vendor-added-modal-card__value {
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Buyer Comparative View: Vendor Added Specifications Section */
+.rfq-comparative-vendor-added-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-top: 1.5rem;
+}
+
+.rfq-vendor-added-grid-wrap {
+  overflow-x: auto;
+  padding: 1.25rem;
+  background: #FAFAFA;
+  border-top: 1px solid #E2E8F0;
+}
+
+.rfq-vendor-added-grid {
+  display: grid;
+  gap: 1rem;
+  min-width: 100%;
+}
+
+.rfq-vendor-added-col {
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.rfq-vendor-added-col__header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.rfq-vendor-added-col__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rfq-vendor-added-col__name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rfq-vendor-added-col__loc {
+  font-size: 0.72rem;
+  color: #64748B;
+}
+
+.rfq-vendor-added-col__body {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rfq-vendor-added-items-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rfq-vendor-added-spec-card {
+  padding: 0.75rem 0.85rem;
+  background: #FFFDF7;
+  border: 1px solid #FDE68A;
+  border-left: 3px solid #F59E0B;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rfq-vendor-added-spec-card__top {
+  display: flex;
+  align-items: center;
+}
+
+.rfq-vendor-added-spec-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.rfq-vendor-added-spec-value {
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.rfq-vendor-added-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  padding: 1rem;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.rfq-vendor-added-empty-text {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: #94A3B8;
+}
+
 
 
 

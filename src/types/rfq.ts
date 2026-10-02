@@ -71,6 +71,13 @@ export type RFQStatus =
   | 'Closing Soon'
   | 'Closed';
 
+export interface VendorAddedSpec {
+  id: string;
+  itemId?: string;
+  specName: string;
+  specValue: string;
+}
+
 export interface QuotedItem {
   itemId: string;
   itemName: string;
@@ -79,6 +86,7 @@ export interface QuotedItem {
   unit: string;
   unitPrice: number;
   lineTotal: number;
+  vendorAddedSpecs?: VendorAddedSpec[];
 }
 
 export interface VendorAttachment {
@@ -106,6 +114,7 @@ export interface VendorQuotation {
   validityDate: string;
   vendorComments: string;
   attachments?: VendorAttachment[];
+  vendorAddedSpecs?: VendorAddedSpec[];
 }
 
 export interface VendorResponse {

@@ -1,3 +1,5 @@
+import type { VendorAddedSpec } from '../types/rfq';
+
 export interface SpecificationComparisonRow {
   id: string;
   category: string; // Group from CSV (visual header only)
@@ -42,6 +44,7 @@ export interface VendorCommercialQuotation {
   rating: number;
   location: string;
   submittedDate: string;
+  vendorAddedSpecs?: VendorAddedSpec[];
 }
 
 export const mockLaptopCommercialQuotations: Record<string, VendorCommercialQuotation> = {
@@ -66,6 +69,18 @@ export const mockLaptopCommercialQuotations: Record<string, VendorCommercialQuot
     rating: 4.9,
     location: 'Bengaluru, Karnataka',
     submittedDate: '28 Aug 2026',
+    vendorAddedSpecs: [
+      {
+        id: 'pa-add-1',
+        specName: 'Additional RAM',
+        specValue: '32 GB DDR5 ECC RAM, expandable to 64 GB',
+      },
+      {
+        id: 'pa-add-2',
+        specName: 'Additional Cooling',
+        specValue: 'Enhanced cooling module included',
+      },
+    ],
   },
   'ABC Digital Private Limited': {
     vendorId: 'vnd-ad-02',
@@ -88,6 +103,13 @@ export const mockLaptopCommercialQuotations: Record<string, VendorCommercialQuot
     rating: 4.7,
     location: 'Mumbai, Maharashtra',
     submittedDate: '28 Aug 2026',
+    vendorAddedSpecs: [
+      {
+        id: 'abc-add-1',
+        specName: 'Extended Warranty',
+        specValue: '5-year coverage included with on-site technician dispatch',
+      },
+    ],
   },
   'Demo Technologies Private Limited': {
     vendorId: 'vnd-dt-03',
@@ -110,6 +132,41 @@ export const mockLaptopCommercialQuotations: Record<string, VendorCommercialQuot
     rating: 4.8,
     location: 'Hyderabad, Telangana',
     submittedDate: '29 Aug 2026',
+    vendorAddedSpecs: [],
+  },
+  'Acme Global': {
+    vendorId: 'v-1',
+    vendorName: 'Acme Global',
+    quotationNumber: 'AG-Q-2026-1024',
+    unitPrice: 79800,
+    quantity: 20,
+    subtotal: 1596000,
+    taxRate: 0.18,
+    taxAmount: 287280,
+    totalAmount: 1883280,
+    deliveryTimeline: '14 Business Days',
+    paymentTerms: 'Net 30 Days',
+    warranty: '3 Years On-site Warranty',
+    vendorRemarks:
+      'Intel Core i7 configuration with 3-year OEM on-site warranty, pre-configured image, and consolidated transit insurance included.',
+    logoInitial: 'AG',
+    logoColor: '#0284C7',
+    leadTime: '14 Business Days',
+    rating: 4.8,
+    location: 'Bangalore, Karnataka',
+    submittedDate: '27 Aug 2026',
+    vendorAddedSpecs: [
+      {
+        id: 'ag-vas-1',
+        specName: 'Additional RAM',
+        specValue: '32 GB DDR5 ECC RAM, expandable to 64 GB',
+      },
+      {
+        id: 'ag-vas-2',
+        specName: 'Additional Cooling',
+        specValue: 'Enhanced cooling module included',
+      },
+    ],
   },
 };
 
