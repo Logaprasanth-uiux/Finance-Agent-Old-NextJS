@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Laptop, ArrowRight, Sparkles, CheckCircle2, RotateCcw, Monitor } from 'lucide-react';
+import { Laptop, Sparkles, CheckCircle2, X, Info } from 'lucide-react';
 
 const MOBILE_BREAKPOINT = 768;
-const STORAGE_KEY = 'agentic_finance_desktop_mode';
 
 const DesktopWorkspaceIllustration: React.FC = () => {
   return (
@@ -131,21 +130,11 @@ const DesktopWorkspaceIllustration: React.FC = () => {
 
 export const MobileGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [forceDesktop, setForceDesktop] = useState<boolean>(false);
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [closeAttempted, setCloseAttempted] = useState<boolean>(false);
 
   useEffect(() => {
     setIsMounted(true);
-
-    // Retrieve saved desktop mode preference for current session
-    try {
-      const storedPreference = sessionStorage.getItem(STORAGE_KEY);
-      if (storedPreference === 'true') {
-        setForceDesktop(true);
-      }
-    } catch {
-      // Ignore sessionStorage access exceptions if any
-    }
 
     const checkViewport = () => {
       if (typeof window !== 'undefined') {
@@ -158,37 +147,14 @@ export const MobileGate: React.FC<{ children: React.ReactNode }> = ({ children }
     return () => window.removeEventListener('resize', checkViewport);
   }, []);
 
-  // When forced desktop is active on mobile viewport, allow horizontal scrolling
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      if (forceDesktop && isMobile) {
-        document.body.classList.add('desktop-mode-override');
-      } else {
-        document.body.classList.remove('desktop-mode-override');
-      }
-    }
-    return () => {
-      if (typeof document !== 'undefined') {
-        document.body.classList.remove('desktop-mode-override');
-      }
-    };
-  }, [forceDesktop, isMobile]);
-
-  const handleContinueDesktop = () => {
-    setForceDesktop(true);
+  const handleCloseAndExit = () => {
+    setCloseAttempted(true);
     try {
-      sessionStorage.setItem(STORAGE_KEY, 'true');
+      if (typeof window !== 'undefined') {
+        window.close();
+      }
     } catch {
-      // Ignore
-    }
-  };
-
-  const handleReturnToMobileNotice = () => {
-    setForceDesktop(false);
-    try {
-      sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore
+      // Browser prevented script-initiated window close
     }
   };
 
@@ -197,8 +163,8 @@ export const MobileGate: React.FC<{ children: React.ReactNode }> = ({ children }
     return <>{children}</>;
   }
 
-  // If on mobile viewport and user has not chosen to continue in desktop view
-  if (isMobile && !forceDesktop) {
+  // If on mobile viewport, display the desktop-optimized experience notice
+  if (isMobile) {
     return (
       <div className="mobile-gate-overlay">
         {/* Ambient background glows */}
@@ -253,12 +219,19 @@ export const MobileGate: React.FC<{ children: React.ReactNode }> = ({ children }
             <div className="mobile-gate-action">
               <button
                 type="button"
-                onClick={handleContinueDesktop}
+                onClick={handleCloseAndExit}
                 className="mobile-gate-btn"
               >
-                <span>Continue in Desktop View</span>
-                <ArrowRight size={17} />
+                <span>Close & Exit</span>
+                <X size={17} />
               </button>
+
+              {closeAttempted && (
+                <div className="mobile-gate-fallback-notice">
+                  <Info size={14} className="fallback-icon" />
+                  <span>Please close this browser tab to exit.</span>
+                </div>
+              )}
             </div>
 
             {/* Subtext */}
@@ -272,29 +245,8 @@ export const MobileGate: React.FC<{ children: React.ReactNode }> = ({ children }
     );
   }
 
-  // Otherwise render full desktop application
-  return (
-    <>
-      {children}
-      {isMobile && forceDesktop && (
-        <div className="desktop-mode-banner-floating">
-          <div className="desktop-mode-banner-content">
-            <Monitor size={14} />
-            <span>Desktop View</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleReturnToMobileNotice}
-            className="desktop-mode-banner-btn"
-            title="Return to mobile experience notice"
-          >
-            <RotateCcw size={12} />
-            <span>Show Notice</span>
-          </button>
-        </div>
-      )}
-    </>
-  );
+  // Desktop or larger screens render full application
+  return <>{children}</>;
 };
 
 export default MobileGate;
