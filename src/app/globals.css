@@ -14306,6 +14306,295 @@ body {
   color: #94A3B8;
 }
 
+/* ==========================================================================
+   Mobile Experience Gate Notice Styling
+   ========================================================================== */
+.mobile-gate-overlay {
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(135% 120% at 50% 0%, #151928 0%, #0B0E17 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  position: relative;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  z-index: 9999;
+}
+
+.mobile-gate-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mobile-gate-glow--1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.28) 0%, rgba(79, 70, 229, 0) 70%);
+  top: -80px;
+  left: 10%;
+}
+
+.mobile-gate-glow--2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, rgba(14, 165, 233, 0) 70%);
+  bottom: -60px;
+  right: 10%;
+}
+
+.mobile-gate-grid-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mobile-gate-content {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 2;
+  animation: arFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-gate-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+}
+
+.mobile-gate-brand-icon {
+  color: #818CF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-gate-brand-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mobile-gate-brand-text .brand-agentic {
+  color: #FFFFFF;
+}
+
+.mobile-gate-brand-text .brand-finance {
+  color: #818CF8;
+}
+
+.mobile-gate-card {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 1.75rem 1.5rem;
+  box-shadow: 
+    0 24px 48px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.15rem;
+  box-sizing: border-box;
+}
+
+.mobile-gate-illustration-wrapper {
+  width: 100%;
+  max-width: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-gate-illustration {
+  width: 100%;
+  height: auto;
+  max-height: 155px;
+  display: block;
+}
+
+.mobile-gate-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.mobile-gate-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.mobile-gate-description {
+  font-size: 0.87rem;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.mobile-gate-features {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+}
+
+.mobile-gate-feature-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.mobile-gate-feature-pill .feature-icon {
+  color: #4F46E5;
+  flex-shrink: 0;
+}
+
+.mobile-gate-action {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.mobile-gate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.94rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.mobile-gate-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+}
+
+.mobile-gate-btn:active {
+  transform: translateY(0);
+}
+
+.mobile-gate-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.mobile-gate-hint .hint-icon {
+  color: #94A3B8;
+}
+
+/* Floating banner when desktop mode is forced on mobile */
+.desktop-mode-banner-floating {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid #334155;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 99999;
+  font-size: 0.78rem;
+  animation: arFadeIn 0.25s ease;
+}
+
+.desktop-mode-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #CBD5E1;
+  font-weight: 500;
+}
+
+.desktop-mode-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.desktop-mode-banner-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+body.desktop-mode-override {
+  overflow-x: auto !important;
+  min-width: 1024px;
+}
+
+
 
 
 

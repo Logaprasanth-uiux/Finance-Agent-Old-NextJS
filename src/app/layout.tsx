@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import MobileGate from '@/components/MobileGate';
 
 export const metadata: Metadata = {
   title: 'Agentic Finance | Enterprise Workspace',
@@ -24,7 +25,9 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          {children}
+          <MobileGate>
+            {children}
+          </MobileGate>
         </AuthProvider>
       </body>
     </html>
